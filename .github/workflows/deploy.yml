@@ -1,0 +1,39 @@
+name: Deploy (ArgoCD)
+
+on:
+  workflow_run:
+    workflows: ["Build & Push Docker Images"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  deploy:
+    name: Trigger ArgoCD Sync
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Update image tags in Helm values
+        run: |
+          GIT_SHA=${{ github.sha }}
+          SHORT_SHA=${GIT_SHA::8}
+          # Update the image tag in helm values
+          sed -i "s/imageTag:.*/imageTag: ${SHORT_SHA}/" infrastructure/helm/values.prod.yaml
+          echo "Updated image tag to: ${SHORT_SHA}"
+
+      - name: Commit updated values
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add infrastructure/helm/values.prod.yaml
+          git commit -m "ci(deploy): update image tags to ${GITHUB_SHA::8} [skip ci]"
+          git push
+
+      # ArgoCD will auto-sync when it detects the git change
+      # Optionally trigger manual sync via ArgoCD CLI:
+      # - name: Trigger ArgoCD sync
+      #   run: |
+      #     argocd app sync nexora --auth-token ${{ secrets.ARGOCD_TOKEN }} --server ${{ secrets.ARGOCD_SERVER }}

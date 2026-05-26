@@ -1,0 +1,68 @@
+# Node
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+.next/
+out/
+build/
+
+# Environment files (NEVER commit real secrets)
+.env
+.env.local
+.env.prod
+.env.*.local
+!.env.example
+!.env.prod.example
+!.env.local.example
+
+# Docker
+.docker/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE
+.vscode/
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Testing
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+
+# Turbo
+.turbo/
+
+# Prisma
+prisma/migrations/
+
+# pnpm
+.pnpm-store/
+
+# TypeScript
+*.tsbuildinfo

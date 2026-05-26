@@ -1,0 +1,21 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Install dependencies (cached layer)
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install
+
+# Copy source (overridden by volume mount in local dev)
+COPY . .
+
+# Generate Prisma client (if this service uses Prisma)
+# RUN pnpm prisma generate
+
+EXPOSE 3001
+
+# Hot-reload with ts-node-dev
+CMD ["pnpm", "run", "start:dev"]

@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package nexora.inventory;
+
+service InventoryService {
+  rpc CheckStock (CheckStockRequest) returns (CheckStockResponse);
+  rpc ReserveStock (ReserveStockRequest) returns (ReserveStockResponse);
+  rpc ReleaseStock (ReleaseStockRequest) returns (ReleaseStockResponse);
+}
+
+message StockItem {
+  string productId = 1;
+  optional string variantId = 2;
+  int32 quantity = 3;
+}
+
+message CheckStockRequest {
+  repeated StockItem items = 1;
+}
+
+message CheckStockResponse {
+  bool available = 1;
+  repeated StockItem unavailableItems = 2;
+}
+
+message ReserveStockRequest {
+  string orderId = 1;
+  repeated StockItem items = 2;
+  int32 ttlSeconds = 3;
+}
+
+message ReserveStockResponse {
+  bool success = 1;
+  string reservationId = 2;
+  string reason = 3;
+}
+
+message ReleaseStockRequest {
+  string orderId = 1;
+  string reservationId = 2;
+}
+
+message ReleaseStockResponse {
+  bool success = 1;
+}

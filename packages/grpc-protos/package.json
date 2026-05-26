@@ -1,0 +1,14 @@
+{
+  "name": "@nexora/grpc-protos",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "@nexora/tsconfig": "workspace:*",
+    "typescript": "^5.4.0"
+  }
+}

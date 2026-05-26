@@ -1,0 +1,283 @@
+# docker-compose.local.yml
+# Nexora — Local development environment
+# Hot-reload enabled, all ports exposed, dev tooling included
+# Usage: docker compose -f docker/local/docker-compose.local.yml up
+
+
+networks:
+  nexora-local:
+    driver: bridge
+
+volumes:
+  postgres_local_data:
+  redis_local_data:
+  minio_local_data:
+  opensearch_local_data:
+  kafka_local_data:
+  zookeeper_local_data:
+
+services:
+
+  # ─────────────────────────────────────────────
+  # DATABASES
+  # ─────────────────────────────────────────────
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: nexora-postgres-local
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"   # Exposed for DBeaver/TablePlus
+    volumes:
+      - postgres_local_data:/var/lib/postgresql/data
+      - ../shared/init-scripts/postgres:/docker-entrypoint-initdb.d
+    networks:
+      - nexora-local
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: nexora-redis-local
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    ports:
+      - "6379:6379"   # Exposed for Redis clients (Medis, RedisInsight)
+    volumes:
+      - redis_local_data:/data
+    networks:
+      - nexora-local
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─────────────────────────────────────────────
+  # OBJECT STORAGE
+  # ─────────────────────────────────────────────
+
+  minio:
+    image: minio/minio:latest
+    container_name: nexora-minio-local
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - "9000:9000"   # S3 API
+      - "9001:9001"   # Web console → http://localhost:9001
+    volumes:
+      - minio_local_data:/data
+    networks:
+      - nexora-local
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      retries: 3
+
+  # ─────────────────────────────────────────────
+  # KAFKA / EVENT STREAMING
+  # ─────────────────────────────────────────────
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    container_name: nexora-zookeeper-local
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    volumes:
+      - zookeeper_local_data:/var/lib/zookeeper/data
+    networks:
+      - nexora-local
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: nexora-kafka-local
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_RETENTION_HOURS: 24
+    ports:
+      - "29092:29092"   # Exposed for local Kafka tools
+    volumes:
+      - kafka_local_data:/var/lib/kafka/data
+    networks:
+      - nexora-local
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.6.0
+    container_name: nexora-schema-registry-local
+    depends_on:
+      - kafka
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka:9092
+    ports:
+      - "8081:8081"
+    networks:
+      - nexora-local
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: nexora-kafka-ui-local
+    depends_on:
+      - kafka
+      - schema-registry
+    environment:
+      KAFKA_CLUSTERS_0_NAME: nexora-local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry:8081
+    ports:
+      - "8080:8080"   # Kafka UI → http://localhost:8080
+    networks:
+      - nexora-local
+
+  # ─────────────────────────────────────────────
+  # SEARCH
+  # ─────────────────────────────────────────────
+
+  opensearch:
+    image: opensearchproject/opensearch:2.12.0
+    container_name: nexora-opensearch-local
+    environment:
+      - discovery.type=single-node
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=${OPENSEARCH_PASSWORD}
+      - plugins.security.disabled=true   # Disabled for local simplicity
+      - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+      - "9600:9600"
+    volumes:
+      - opensearch_local_data:/usr/share/opensearch/data
+    networks:
+      - nexora-local
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:2.12.0
+    container_name: nexora-opensearch-dashboards-local
+    depends_on:
+      - opensearch
+    environment:
+      OPENSEARCH_HOSTS: '["http://opensearch:9200"]'
+      DISABLE_SECURITY_DASHBOARDS_PLUGIN: "true"
+    ports:
+      - "5601:5601"   # OpenSearch Dashboards → http://localhost:5601
+    networks:
+      - nexora-local
+
+  # ─────────────────────────────────────────────
+  # OBSERVABILITY (lightweight for local)
+  # ─────────────────────────────────────────────
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: nexora-prometheus-local
+    volumes:
+      - ../../infrastructure/monitoring/prometheus/prometheus.local.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"   # Prometheus → http://localhost:9090
+    networks:
+      - nexora-local
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: nexora-grafana-local
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+    ports:
+      - "3333:3000"   # Grafana → http://localhost:3333
+    volumes:
+      - ../../infrastructure/monitoring/grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - nexora-local
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: nexora-jaeger-local
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "16686:16686"   # Jaeger UI → http://localhost:16686
+      - "14268:14268"   # HTTP collector
+      - "4317:4317"     # OTLP gRPC
+      - "4318:4318"     # OTLP HTTP
+    networks:
+      - nexora-local
+
+  # ─────────────────────────────────────────────
+  # MICROSERVICES (dev mode — hot-reload)
+  # Uncomment as you build each service
+  # ─────────────────────────────────────────────
+
+  # auth-service:
+  #   build:
+  #     context: ../../services/auth-service
+  #     dockerfile: Dockerfile.local
+  #   container_name: nexora-auth-local
+  #   restart: unless-stopped
+  #   env_file: .env.local
+  #   environment:
+  #     SERVICE_NAME: auth-service
+  #     PORT: 3001
+  #     DB_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+  #     REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+  #   volumes:
+  #     - ../../services/auth-service:/app
+  #     - /app/node_modules
+  #   ports:
+  #     - "3001:3001"
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #   networks:
+  #     - nexora-local
+
+  # product-service:    port 3002
+  # inventory-service:  port 3003
+  # cart-service:       port 3004
+  # order-service:      port 3005
+  # payment-service:    port 3006
+  # notification-service: port 3007
+  # search-service:     port 3008
+  # recommendation-service: port 3009
+  # analytics-service:  port 3010
+
+  # api-gateway:
+  #   port 4000
+  #   depends on all services
+
+  # storefront:
+  #   port 3000
