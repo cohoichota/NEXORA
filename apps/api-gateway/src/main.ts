@@ -17,6 +17,8 @@ async function bootstrap() {
   app.use(createProxyMiddleware({ pathFilter: '/api/v1/products', target: process.env.PRODUCT_SERVICE_URL || 'http://localhost:3002', changeOrigin: true, pathRewrite: { '^/api/v1/products': '/products' } }));
   app.use(createProxyMiddleware({ pathFilter: '/api/v1/cart', target: process.env.CART_SERVICE_URL || 'http://localhost:3003', changeOrigin: true, pathRewrite: { '^/api/v1/cart': '/cart' } }));
   app.use(createProxyMiddleware({ pathFilter: '/api/v1/orders', target: process.env.ORDER_SERVICE_URL || 'http://localhost:3004', changeOrigin: true, pathRewrite: { '^/api/v1/orders': '/orders' } }));
+  app.use(createProxyMiddleware({ pathFilter: '/api/v1/search', target: process.env.SEARCH_SERVICE_URL || 'http://localhost:3008', changeOrigin: true, pathRewrite: { '^/api/v1/search': '/search' } }));
+  app.use(createProxyMiddleware({ pathFilter: '/socket.io', target: process.env.NOTIFICATION_SERVICE_URL || 'http://localhost:3007', ws: true, changeOrigin: true }));
 
   // CORS configured at Gateway level, not individual services when accessed through gateway
   app.enableCors({

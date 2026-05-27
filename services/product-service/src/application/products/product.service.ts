@@ -4,8 +4,11 @@ import {
   ConflictException,
   ForbiddenException,
   Logger,
+  Inject,
+  OnModuleInit,
 } from '@nestjs/common';
-import { PrismaClient, Prisma, ProductStatus } from '../../generated/prisma';
+import { ClientKafka } from '@nestjs/microservices';
+import { Prisma } from '../../generated/prisma';
 import { PrismaService } from '../../infrastructure/database/prisma/prisma.service';
 import {
   CreateProductDto,
@@ -13,12 +16,20 @@ import {
   ProductQueryDto,
   CreateVariantDto,
 } from './product.dto';
+import { KafkaTopics, ProductEventTypes } from '@nexora/kafka-events';
 
 @Injectable()
-export class ProductService {
+export class ProductService implements OnModuleInit {
   private readonly logger = new Logger(ProductService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject('KAFKA_SERVICE') private readonly kafkaClient: ClientKafka,
+  ) {}
+
+  async onModuleInit() {
+    await this.kafkaClient.connect();
+  }
 
   // ── Create ─────────────────────────────────────────────────
 
@@ -47,6 +58,26 @@ export class ProductService {
     });
 
     this.logger.log(`Product created: ${product.id} by seller ${sellerId}`);
+
+    // Emit event
+    this.kafkaClient.emit(KafkaTopics.PRODUCTS, {
+      key: product.id,
+      value: {
+        type: ProductEventTypes.PRODUCT_CREATED,
+        payload: {
+          id: product.id,
+          name: product.title,
+          slug: product.slug,
+          description: product.description,
+          price: product.basePrice.toNumber(),
+          categoryId: product.categoryId,
+          isAvailable: product.status === 'APPROVED',
+          tags: product.tags,
+          createdAt: product.createdAt.toISOString(),
+        },
+      },
+    });
+
     return product;
   }
 
@@ -135,7 +166,7 @@ export class ProductService {
       throw new ForbiddenException('You can only edit your own products');
     }
 
-    return this.prisma.product.update({
+    const updated = await this.prisma.product.update({
       where: { id },
       data: {
         ...dto,
@@ -150,6 +181,25 @@ export class ProductService {
         variants: { where: { isActive: true } },
       },
     });
+
+    this.kafkaClient.emit(KafkaTopics.PRODUCTS, {
+      key: updated.id,
+      value: {
+        type: ProductEventTypes.PRODUCT_UPDATED,
+        payload: {
+          id: updated.id,
+          name: updated.title,
+          slug: updated.slug,
+          description: updated.description,
+          price: updated.basePrice.toNumber(),
+          categoryId: updated.categoryId,
+          isAvailable: updated.status === 'APPROVED',
+          tags: updated.tags,
+        },
+      },
+    });
+
+    return updated;
   }
 
   // ── Delete ─────────────────────────────────────────────────
@@ -165,6 +215,14 @@ export class ProductService {
     await this.prisma.product.update({
       where: { id },
       data: { status: 'ARCHIVED' as any },
+    });
+
+    this.kafkaClient.emit(KafkaTopics.PRODUCTS, {
+      key: id,
+      value: {
+        type: ProductEventTypes.PRODUCT_DELETED,
+        payload: { id },
+      },
     });
   }
 
