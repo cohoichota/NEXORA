@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: product-service
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/your-org/nexora-ecommerce
+    targetRevision: HEAD
+    path: infrastructure/helm/nexora-service
+    helm:
+      values: |
+        image:
+          repository: ghcr.io/nexora/product-service
+          tag: latest
+        service:
+          port: 3002
+        env:
+          PORT: "3002"
+          KAFKA_BROKERS: "kafka.nexora-infra.svc.cluster.local:9092"
+        secrets:
+          DATABASE_URL: "postgresql://postgres:postgres@postgres.nexora-infra.svc.cluster.local:5432/nexora_products"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: nexora-prod
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

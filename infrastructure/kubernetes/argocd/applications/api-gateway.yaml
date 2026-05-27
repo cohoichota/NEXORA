@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: api-gateway
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/your-org/nexora-ecommerce
+    targetRevision: HEAD
+    path: infrastructure/helm/nexora-service
+    helm:
+      values: |
+        image:
+          repository: ghcr.io/nexora/api-gateway
+          tag: latest
+        service:
+          port: 4000
+        env:
+          PORT: "4000"
+          AUTH_SERVICE_URL: "http://auth-service:3001"
+          PRODUCT_SERVICE_URL: "http://product-service:3002"
+          CART_SERVICE_URL: "http://cart-service:3003"
+          ORDER_SERVICE_URL: "http://order-service:3004"
+          SEARCH_SERVICE_URL: "http://search-service:3008"
+          NOTIFICATION_SERVICE_URL: "http://notification-service:3007"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: nexora-prod
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

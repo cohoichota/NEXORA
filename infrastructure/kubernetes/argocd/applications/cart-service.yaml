@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cart-service
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/your-org/nexora-ecommerce
+    targetRevision: HEAD
+    path: infrastructure/helm/nexora-service
+    helm:
+      values: |
+        image:
+          repository: ghcr.io/nexora/cart-service
+          tag: latest
+        service:
+          port: 3003
+        env:
+          PORT: "3003"
+          REDIS_HOST: "redis.nexora-infra.svc.cluster.local"
+          REDIS_PORT: "6379"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: nexora-prod
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
