@@ -49,6 +49,14 @@ export interface User {
   id: string;
   email: string;
   role: UserRole;
+  // Inline profile fields (flattened for convenience)
+  firstName?: string;
+  lastName?: string;
+  displayName?: string;
+  avatar?: string;
+  phone?: string;
+  emailVerified: boolean;
+  isActive: boolean;
   profile?: UserProfile;
   createdAt: Date;
   updatedAt: Date;
