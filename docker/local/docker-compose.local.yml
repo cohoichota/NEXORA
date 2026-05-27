@@ -222,6 +222,17 @@ services:
     networks:
       - nexora-local
 
+  loki:
+    image: grafana/loki:latest
+    container_name: nexora-loki-local
+    ports:
+      - "3100:3100"
+    volumes:
+      - ../../infrastructure/monitoring/loki/loki.local.yml:/etc/loki/local-config.yaml
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - nexora-local
+
   jaeger:
     image: jaegertracing/all-in-one:latest
     container_name: nexora-jaeger-local

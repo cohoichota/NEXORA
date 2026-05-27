@@ -5,6 +5,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { HealthModule } from './infrastructure/health/health.module';
 import { AuthModule } from './application/auth/auth.module';
 import { PrismaModule } from './infrastructure/database/prisma/prisma.module';
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { PrismaModule } from './infrastructure/database/prisma/prisma.module';
 
     PrismaModule,
     HealthModule,
+    PrometheusModule.register(),
     AuthModule,
   ],
 })

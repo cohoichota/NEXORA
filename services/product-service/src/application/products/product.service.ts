@@ -5,7 +5,7 @@ import {
   ForbiddenException,
   Logger,
 } from '@nestjs/common';
-import { PrismaClient, Prisma, ProductStatus } from '@prisma/client';
+import { PrismaClient, Prisma, ProductStatus } from '../../generated/prisma';
 import { PrismaService } from '../../infrastructure/database/prisma/prisma.service';
 import {
   CreateProductDto,
@@ -34,7 +34,7 @@ export class ProductService {
         ...dto,
         sellerId,
         slug: finalSlug,
-        status: ProductStatus.DRAFT,
+        status: 'DRAFT' as any,
         basePrice: new Prisma.Decimal(dto.basePrice),
         comparePrice: dto.comparePrice ? new Prisma.Decimal(dto.comparePrice) : null,
         tags: dto.tags ?? [],
@@ -67,7 +67,7 @@ export class ProductService {
       }),
       ...(categoryId && { categoryId }),
       ...(sellerId && { sellerId }),
-      ...(status ? { status } : { status: ProductStatus.APPROVED }),
+      ...(status ? { status } : { status: 'APPROVED' as any }),
       ...(minPrice !== undefined || maxPrice !== undefined
         ? {
             basePrice: {
@@ -164,7 +164,7 @@ export class ProductService {
     // Soft delete — set status to ARCHIVED
     await this.prisma.product.update({
       where: { id },
-      data: { status: ProductStatus.ARCHIVED },
+      data: { status: 'ARCHIVED' as any },
     });
   }
 
