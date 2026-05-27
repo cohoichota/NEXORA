@@ -183,3 +183,25 @@ model OrderEvent {
   @@index([createdAt])
   @@map("order_events")
 }
+
+// ── Outbox Pattern ─────────────────────────────────────────────
+
+model OutboxMessage {
+  id        String   @id @default(uuid())
+  topic     String
+  type      String
+  payload   Json
+  status    OutboxStatus @default(PENDING)
+  error     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, createdAt])
+  @@map("outbox_messages")
+}
+
+enum OutboxStatus {
+  PENDING
+  PROCESSED
+  FAILED
+}

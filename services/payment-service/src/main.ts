@@ -1,11 +1,10 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
-  const port = process.env.PORT ?? 3004;
+  const port = process.env.PORT ?? 3007;
 
   const app = await NestFactory.create(AppModule, {
     logger: ['error', 'warn', 'log', 'debug', 'verbose'],
@@ -16,28 +15,8 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-      transformOptions: { enableImplicitConversion: true },
     }),
   );
-
-  app.enableCors({
-    origin: process.env.CORS_ORIGIN?.split(',') ?? ['http://localhost:3000'],
-    credentials: true,
-  });
-
-  if (process.env.NODE_ENV !== 'production') {
-    const config = new DocumentBuilder()
-      .setTitle('Nexora Order Service')
-      .setDescription('Order management API')
-      .setVersion('1.0')
-      .addBearerAuth()
-      .addTag('orders')
-      .addTag('health')
-      .build();
-    const doc = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('docs', app, doc);
-    logger.log(`Swagger UI: http://localhost:${port}/docs`);
-  }
 
   // Connect Kafka Microservice
   app.connectMicroservice({
@@ -47,14 +26,14 @@ async function bootstrap() {
         brokers: [process.env.KAFKA_BROKERS || 'localhost:29092'],
       },
       consumer: {
-        groupId: 'order-service-group',
+        groupId: 'payment-service-group',
       },
     },
   });
 
   await app.startAllMicroservices();
   await app.listen(port, '0.0.0.0');
-  logger.log(`Order Service running on http://localhost:${port}`);
+  logger.log(`Payment Service running on http://localhost:${port}`);
 }
 
 bootstrap().catch((err) => {

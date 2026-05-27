@@ -31,46 +31,64 @@ export class OrderService {
     const total = subtotal + tax;
     const orderNumber = await this.generateOrderNumber();
 
-    const order = await this.prisma.order.create({
-      data: {
-        number: orderNumber,
-        userId,
-        status: OrderStatus.PENDING,
-        subtotal: new Prisma.Decimal(subtotal),
-        tax: new Prisma.Decimal(tax),
-        total: new Prisma.Decimal(total),
-        shippingAddress: dto.shippingAddress as unknown as Prisma.InputJsonValue,
-        billingAddress: dto.billingAddress as unknown as Prisma.InputJsonValue ?? Prisma.JsonNull,
-        notes: dto.notes,
-        metadata: dto.couponCode ? { couponCode: dto.couponCode } : Prisma.JsonNull,
-        placedAt: new Date(),
-        items: {
-          create: dto.items.map((item) => ({
-            productId: item.productId,
-            variantId: item.variantId,
-            sellerId: item.sellerId,
-            title: item.title,
-            sku: item.sku,
-            imageUrl: item.imageUrl,
-            quantity: item.quantity,
-            unitPrice: new Prisma.Decimal(item.unitPrice),
-            totalPrice: new Prisma.Decimal(item.unitPrice * item.quantity),
-          })),
-        },
-        timeline: {
-          create: {
-            actor: userId,
-            event: 'order.created',
-            data: { orderNumber, total },
+    const order = await this.prisma.$transaction(async (tx) => {
+      const createdOrder = await tx.order.create({
+        data: {
+          number: orderNumber,
+          userId,
+          status: OrderStatus.PENDING,
+          subtotal: new Prisma.Decimal(subtotal),
+          tax: new Prisma.Decimal(tax),
+          total: new Prisma.Decimal(total),
+          shippingAddress: dto.shippingAddress as unknown as Prisma.InputJsonValue,
+          billingAddress: dto.billingAddress as unknown as Prisma.InputJsonValue ?? Prisma.JsonNull,
+          notes: dto.notes,
+          metadata: dto.couponCode ? { couponCode: dto.couponCode } : Prisma.JsonNull,
+          placedAt: new Date(),
+          items: {
+            create: dto.items.map((item) => ({
+              productId: item.productId,
+              variantId: item.variantId,
+              sellerId: item.sellerId,
+              title: item.title,
+              sku: item.sku,
+              imageUrl: item.imageUrl,
+              quantity: item.quantity,
+              unitPrice: new Prisma.Decimal(item.unitPrice),
+              totalPrice: new Prisma.Decimal(item.unitPrice * item.quantity),
+            })),
+          },
+          timeline: {
+            create: {
+              actor: userId,
+              event: 'order.created',
+              data: { orderNumber, total },
+            },
           },
         },
-      },
-      include: {
-        items: true,
-        payments: true,
-        shipments: true,
-        timeline: { orderBy: { createdAt: 'desc' }, take: 5 },
-      },
+        include: {
+          items: true,
+          payments: true,
+          shipments: true,
+          timeline: { orderBy: { createdAt: 'desc' }, take: 5 },
+        },
+      });
+
+      // Insert into Outbox within the same transaction
+      await tx.outboxMessage.create({
+        data: {
+          topic: 'nexora.orders',
+          type: 'ORDER_CREATED',
+          payload: {
+            orderId: createdOrder.id,
+            userId: createdOrder.userId,
+            totalAmount: Number(createdOrder.total),
+            currency: createdOrder.currency,
+          },
+        },
+      });
+
+      return createdOrder;
     });
 
     this.logger.log(`Order ${orderNumber} created for user ${userId} — $${total}`);
