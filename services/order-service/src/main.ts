@@ -1,5 +1,6 @@
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { Transport } from '@nestjs/microservices';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 import { AppModule } from './app.module';
@@ -22,7 +23,7 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: process.env.CORS_ORIGIN?.split(',') ?? ['http://localhost:3000'],
+    origin: process.env.CORS_ORIGIN?.split(',') ?? ['http://localhost:3006'],
     credentials: true,
   });
 
@@ -42,7 +43,7 @@ async function bootstrap() {
 
   // Connect Kafka Microservice
   app.connectMicroservice({
-    transport: 4, // Transport.KAFKA
+    transport: Transport.KAFKA,
     options: {
       client: {
         brokers: [process.env.KAFKA_BROKERS || 'localhost:29092'],

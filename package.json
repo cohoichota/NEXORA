@@ -5,7 +5,7 @@
   "description": "Nexora — Enterprise E-Commerce Platform",
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev",
+    "dev": "turbo run dev --concurrency=20",
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",
     "test": "turbo run test",
@@ -13,7 +13,8 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\"",
     "prepare": "husky",
-    "docker:dev": "docker compose -f docker/local/docker-compose.local.yml up --build"
+    "docker:dev": "docker compose -f docker/local/docker-compose.local.yml up --build",
+    "kill-ports": "for port in {3000..3015}; do lsof -ti:$port | xargs kill -9 2>/dev/null || true; done"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.0.0",

@@ -1,5 +1,7 @@
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { Transport } from '@nestjs/microservices';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { AppModule } from './app.module';
 
@@ -21,7 +23,7 @@ async function bootstrap() {
 
   // Connect Kafka Microservice
   app.connectMicroservice({
-    transport: 4, // Transport.KAFKA
+    transport: Transport.KAFKA,
     options: {
       client: {
         brokers: [process.env.KAFKA_BROKERS || 'localhost:29092'],
@@ -33,6 +35,19 @@ async function bootstrap() {
   });
 
   await app.startAllMicroservices();
+
+  if (process.env.NODE_ENV !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle('Nexora Payment Service')
+      .setDescription('API Documentation for payment-service')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .addTag('payment')
+      .build();
+    const doc = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('docs', app, doc);
+  }
+
   await app.listen(port, '0.0.0.0');
   logger.log(`Payment Service running on http://localhost:${port}`);
 }

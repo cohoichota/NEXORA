@@ -442,12 +442,12 @@ services:
     command: pnpm --filter @nexora/search-service dev
     environment:
       SERVICE_NAME: search-service
-      PORT: 3009
+      PORT: 3007
       DB_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
       KAFKA_BROKER: kafka:9092
     ports:
-      - '3009:3009'
+      - '3007:3007'
     depends_on:
       postgres:
         condition: service_healthy

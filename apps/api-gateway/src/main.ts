@@ -29,7 +29,7 @@ async function bootstrap() {
   app.use(
     createProxyMiddleware({
       pathFilter: '/api/v1/products',
-      target: process.env.PRODUCT_SERVICE_URL || 'http://localhost:3002',
+      target: process.env.PRODUCT_SERVICE_URL || 'http://localhost:3003',
       changeOrigin: true,
       pathRewrite: { '^/api/v1/products': '/products' },
     }),
@@ -37,7 +37,7 @@ async function bootstrap() {
   app.use(
     createProxyMiddleware({
       pathFilter: '/api/v1/cart',
-      target: process.env.CART_SERVICE_URL || 'http://localhost:3003',
+      target: process.env.CART_SERVICE_URL || 'http://localhost:3005',
       changeOrigin: true,
       pathRewrite: { '^/api/v1/cart': '/cart' },
     }),
@@ -45,7 +45,7 @@ async function bootstrap() {
   app.use(
     createProxyMiddleware({
       pathFilter: '/api/v1/orders',
-      target: process.env.ORDER_SERVICE_URL || 'http://localhost:3004',
+      target: process.env.ORDER_SERVICE_URL || 'http://localhost:3006',
       changeOrigin: true,
       pathRewrite: { '^/api/v1/orders': '/orders' },
     }),
@@ -53,7 +53,7 @@ async function bootstrap() {
   app.use(
     createProxyMiddleware({
       pathFilter: '/api/v1/search',
-      target: process.env.SEARCH_SERVICE_URL || 'http://localhost:3008',
+      target: process.env.SEARCH_SERVICE_URL || 'http://localhost:3009',
       changeOrigin: true,
       pathRewrite: { '^/api/v1/search': '/search' },
     }),
@@ -61,7 +61,7 @@ async function bootstrap() {
   app.use(
     createProxyMiddleware({
       pathFilter: '/api/v1/payments',
-      target: process.env.PAYMENT_SERVICE_URL || 'http://localhost:3006',
+      target: process.env.PAYMENT_SERVICE_URL || 'http://localhost:3007',
       changeOrigin: true,
       pathRewrite: { '^/api/v1/payments': '/payments' },
     }),
@@ -69,7 +69,7 @@ async function bootstrap() {
   app.use(
     createProxyMiddleware({
       pathFilter: '/socket.io',
-      target: process.env.NOTIFICATION_SERVICE_URL || 'http://localhost:3007',
+      target: process.env.NOTIFICATION_SERVICE_URL || 'http://localhost:3008',
       ws: true,
       changeOrigin: true,
     }),
@@ -90,8 +90,8 @@ async function bootstrap() {
       .addTag('gateway')
       .build();
     const doc = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('docs', app, doc);
-    logger.log(`Swagger UI: http://localhost:${port}/docs`);
+    SwaggerModule.setup('api/docs', app, doc);
+    logger.log(`Swagger UI: http://localhost:${port}/api/docs`);
   }
 
   await app.listen(port, '0.0.0.0');

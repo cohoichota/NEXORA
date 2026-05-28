@@ -194,10 +194,12 @@ export class OpensearchService implements OnModuleInit {
     // 2. Construct context string
     const context = products
       .slice(0, 3)
-      .map(
-        (p: { name: string; price: number; description?: string }) =>
-          `- ${p.name} ($${p.price}): ${p.description || 'No description'}`,
-      )
+      .map((p) => {
+        const name = String(p.name || 'Unknown Product');
+        const price = Number(p.price || 0);
+        const description = p.description ? String(p.description) : 'No description';
+        return `- ${name} ($${price}): ${description}`;
+      })
       .join('\n');
 
     // 3. Prompt LLM

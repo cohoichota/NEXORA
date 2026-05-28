@@ -25,7 +25,14 @@ export class IndexerController {
       switch (event.type as unknown as ProductEventTypes) {
         case ProductEventTypes.PRODUCT_CREATED:
         case ProductEventTypes.PRODUCT_UPDATED:
-          await this.opensearchService.indexProduct(event.payload);
+          await this.opensearchService.indexProduct(
+            event.payload as Record<string, unknown> & {
+              id: string;
+              name: string;
+              description?: string;
+              tags?: string[];
+            },
+          );
           this.logger.log(`Processed ${event.type} for ${event.payload.id}`);
           break;
         case ProductEventTypes.PRODUCT_DELETED:
