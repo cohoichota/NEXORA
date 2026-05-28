@@ -245,6 +245,30 @@ export class ProductService implements OnModuleInit {
     });
   }
 
+  // ── AI Generator ───────────────────────────────────────────
+
+  async generateDescription(title: string, keywords: string[]): Promise<string> {
+    const prompt = `Write a compelling, SEO-optimized product description for a product titled '${title}' featuring these keywords: ${keywords.join(', ')}. Format the response in Markdown.`;
+
+    if (!process.env.GEMINI_API_KEY) {
+      return `### ${title}\n\n[Mock AI Description] This is a fantastic product featuring ${keywords.join(', ')}. Buy it now!`;
+    }
+
+    try {
+      // @ts-ignore
+      const { GoogleGenAI } = await import('@google/genai');
+      const ai = new GoogleGenAI({});
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+      });
+      return response.text;
+    } catch (error) {
+      this.logger.error('Failed to generate description', error);
+      return 'Sorry, AI generation failed at the moment.';
+    }
+  }
+
   // ── Helpers ────────────────────────────────────────────────
 
   private generateSlug(title: string): string {

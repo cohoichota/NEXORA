@@ -93,6 +93,16 @@ export class ProductController {
     return this.productService.remove(id, sellerId);
   }
 
+  // ── POST /products/generate-description ────────────────────
+
+  @Post('generate-description')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Generate an AI product description' })
+  async generateDescription(@Body() dto: { title: string; keywords: string[] }) {
+    const description = await this.productService.generateDescription(dto.title, dto.keywords || []);
+    return { description };
+  }
+
   // ── POST /products/:id/variants ────────────────────────────
 
   @Post(':id/variants')
