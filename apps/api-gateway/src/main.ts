@@ -3,6 +3,7 @@ import { Logger } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { createProxyMiddleware } from 'http-proxy-middleware';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const logger = new Logger('GatewayBootstrap');
@@ -11,6 +12,9 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: ['error', 'warn', 'log', 'debug', 'verbose'],
   });
+
+  // OWASP Mitigations
+  app.use(helmet());
 
   // Proxy Routes (using http-proxy-middleware v3/v4 syntax)
   app.use(createProxyMiddleware({ pathFilter: '/api/v1/auth', target: process.env.AUTH_SERVICE_URL || 'http://localhost:3001', changeOrigin: true, pathRewrite: { '^/api/v1/auth': '/auth' } }));

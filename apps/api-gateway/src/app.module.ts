@@ -6,6 +6,8 @@ import { createProxyMiddleware } from 'http-proxy-middleware';
 import { HealthModule } from './infrastructure/health/health.module';
 import { AuthMiddleware } from './infrastructure/auth/auth.middleware';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -22,6 +24,16 @@ import { PrometheusModule } from '@willsoto/nestjs-prometheus';
     }),
     HealthModule,
     PrometheusModule.register(),
+    ThrottlerModule.forRoot([{
+      ttl: 60000,
+      limit: 100, // 100 req per minute globally
+    }]),
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule implements NestModule {

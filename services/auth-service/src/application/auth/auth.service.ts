@@ -94,8 +94,14 @@ export class AuthService {
       include: { user: true },
     });
 
-    if (!session || session.revokedAt || session.expiresAt < new Date()) {
+    if (!session || session.expiresAt < new Date()) {
       throw new UnauthorizedException('Invalid or expired refresh token');
+    }
+
+    if (session.revokedAt) {
+      this.logger.warn(`Token replay detected for user ${session.userId}. Revoking all active sessions.`);
+      await this.logoutAll(session.userId);
+      throw new UnauthorizedException('Security violation: Please log in again');
     }
 
     // Rotate refresh token (invalidate old, issue new)

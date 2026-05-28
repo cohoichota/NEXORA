@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 import { HealthModule } from './infrastructure/health/health.module';
 import { AuthModule } from './application/auth/auth.module';
@@ -23,6 +24,12 @@ import { PrometheusModule } from '@willsoto/nestjs-prometheus';
     HealthModule,
     PrometheusModule.register(),
     AuthModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}
