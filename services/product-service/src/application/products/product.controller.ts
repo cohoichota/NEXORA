@@ -9,31 +9,16 @@ import {
   Query,
   HttpCode,
   HttpStatus,
-  UseGuards,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiParam,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 
-import { ProductService } from './product.service';
 import {
   CreateProductDto,
   UpdateProductDto,
   ProductQueryDto,
   CreateVariantDto,
 } from './product.dto';
-
-// ── Simple inline guard for demo — replace with proper JWT guard from shared lib
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
-
-@Injectable()
-class OptionalJwtGuard implements CanActivate {
-  canActivate(_ctx: ExecutionContext) { return true; }
-}
+import { ProductService } from './product.service';
 
 @ApiTags('products')
 @Controller('products')
@@ -99,7 +84,10 @@ export class ProductController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Generate an AI product description' })
   async generateDescription(@Body() dto: { title: string; keywords: string[] }) {
-    const description = await this.productService.generateDescription(dto.title, dto.keywords || []);
+    const description = await this.productService.generateDescription(
+      dto.title,
+      dto.keywords || [],
+    );
     return { description };
   }
 

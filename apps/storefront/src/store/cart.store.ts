@@ -1,7 +1,6 @@
+import type { CartItem } from '@nexora/shared-types';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-
-import type { CartItem } from '@nexora/shared-types';
 
 // ── Cart Store (UI state) ─────────────────────────────────────────
 // Server state is managed by TanStack Query — this store handles
@@ -9,7 +8,7 @@ import type { CartItem } from '@nexora/shared-types';
 
 interface CartUIState {
   isOpen: boolean;
-  items: CartItem[];          // Optimistic local copy
+  items: CartItem[]; // Optimistic local copy
   itemCount: number;
 
   // Actions
@@ -64,9 +63,7 @@ export const useCartStore = create<CartUIState>()(
           get().removeItem(itemId);
           return;
         }
-        const updated = get().items.map((i) =>
-          i.id === itemId ? { ...i, quantity } : i,
-        );
+        const updated = get().items.map((i) => (i.id === itemId ? { ...i, quantity } : i));
         set({ items: updated, itemCount: updated.reduce((a, i) => a + i.quantity, 0) });
       },
 

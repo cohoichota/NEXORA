@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
-
-import { RedisModule } from './infrastructure/redis/redis.module';
-import { HealthModule } from './infrastructure/health/health.module';
-import { CartModule } from './application/cart/cart.module';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
+
+import { CartModule } from './application/cart/cart.module';
+import { HealthModule } from './infrastructure/health/health.module';
+import { RedisModule } from './infrastructure/redis/redis.module';
 
 @Module({
   imports: [
@@ -13,9 +13,7 @@ import { PrometheusModule } from '@willsoto/nestjs-prometheus';
       isGlobal: true,
       envFilePath: ['.env.local', '.env'],
     }),
-    ThrottlerModule.forRoot([
-      { name: 'default', ttl: 60000, limit: 300 },
-    ]),
+    ThrottlerModule.forRoot([{ name: 'default', ttl: 60000, limit: 300 }]),
     RedisModule,
     HealthModule,
     PrometheusModule.register(),

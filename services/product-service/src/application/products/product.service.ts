@@ -8,15 +8,17 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
+import { KafkaTopics, ProductEventTypes } from '@nexora/kafka-events';
+
 import { Prisma } from '../../generated/prisma';
 import { PrismaService } from '../../infrastructure/database/prisma/prisma.service';
+
 import {
   CreateProductDto,
   UpdateProductDto,
   ProductQueryDto,
   CreateVariantDto,
 } from './product.dto';
-import { KafkaTopics, ProductEventTypes } from '@nexora/kafka-events';
 
 @Injectable()
 export class ProductService implements OnModuleInit {
@@ -45,7 +47,7 @@ export class ProductService implements OnModuleInit {
         ...dto,
         sellerId,
         slug: finalSlug,
-        status: 'DRAFT' as any,
+        status: 'DRAFT',
         basePrice: new Prisma.Decimal(dto.basePrice),
         comparePrice: dto.comparePrice ? new Prisma.Decimal(dto.comparePrice) : null,
         tags: dto.tags ?? [],
@@ -84,7 +86,17 @@ export class ProductService implements OnModuleInit {
   // ── List (paginated, filterable) ───────────────────────────
 
   async findAll(query: ProductQueryDto) {
-    const { page = 1, limit = 24, q, categoryId, sellerId, status, minPrice, maxPrice, sort } = query;
+    const {
+      page = 1,
+      limit = 24,
+      q,
+      categoryId,
+      sellerId,
+      status,
+      minPrice,
+      maxPrice,
+      sort,
+    } = query;
     const skip = (page - 1) * limit;
 
     const where: Prisma.ProductWhereInput = {
@@ -98,7 +110,7 @@ export class ProductService implements OnModuleInit {
       }),
       ...(categoryId && { categoryId }),
       ...(sellerId && { sellerId }),
-      ...(status ? { status } : { status: 'APPROVED' as any }),
+      ...(status ? { status } : { status: 'APPROVED' }),
       ...(minPrice !== undefined || maxPrice !== undefined
         ? {
             basePrice: {
@@ -214,7 +226,7 @@ export class ProductService implements OnModuleInit {
     // Soft delete — set status to ARCHIVED
     await this.prisma.product.update({
       where: { id },
-      data: { status: 'ARCHIVED' as any },
+      data: { status: 'ARCHIVED' },
     });
 
     this.kafkaClient.emit(KafkaTopics.PRODUCTS, {
@@ -255,14 +267,14 @@ export class ProductService implements OnModuleInit {
     }
 
     try {
-      // @ts-ignore
+      // @ts-expect-error Dynamic import
       const { GoogleGenAI } = await import('@google/genai');
       const ai = new GoogleGenAI({});
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: prompt,
       });
-      return response.text;
+      return response.text || 'Generated description';
     } catch (error) {
       this.logger.error('Failed to generate description', error);
       return 'Sorry, AI generation failed at the moment.';
@@ -271,7 +283,7 @@ export class ProductService implements OnModuleInit {
 
   // ── Helpers ────────────────────────────────────────────────
 
-  private generateSlug(title: string): string {
+  private generateSlug(title: string = ''): string {
     return title
       .toLowerCase()
       .trim()
@@ -282,11 +294,17 @@ export class ProductService implements OnModuleInit {
 
   private getSortOrder(sort: string): Prisma.ProductOrderByWithRelationInput {
     switch (sort) {
-      case 'price_asc': return { basePrice: 'asc' };
-      case 'price_desc': return { basePrice: 'desc' };
-      case 'rating': return { rating: 'desc' };
-      case 'popular': return { reviewCount: 'desc' };
-      case 'newest': default: return { createdAt: 'desc' };
+      case 'price_asc':
+        return { basePrice: 'asc' };
+      case 'price_desc':
+        return { basePrice: 'desc' };
+      case 'rating':
+        return { rating: 'desc' };
+      case 'popular':
+        return { reviewCount: 'desc' };
+      case 'newest':
+      default:
+        return { createdAt: 'desc' };
     }
   }
 }

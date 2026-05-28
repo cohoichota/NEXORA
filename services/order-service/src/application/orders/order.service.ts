@@ -5,14 +5,15 @@ import {
   BadRequestException,
   Logger,
 } from '@nestjs/common';
-import { Prisma, OrderStatus } from '@prisma/client';
+
+import { Prisma, OrderStatus } from '../../generated/prisma';
 import { PrismaService } from '../../infrastructure/database/prisma/prisma.service';
+
 import { CreateOrderDto, UpdateOrderStatusDto, OrderQueryDto } from './order.dto';
 
 @Injectable()
 export class OrderService {
   private readonly logger = new Logger(OrderService.name);
-  private orderCounter = 0;
 
   constructor(private readonly prisma: PrismaService) {}
 
@@ -23,10 +24,7 @@ export class OrderService {
       throw new BadRequestException('Order must contain at least one item');
     }
 
-    const subtotal = dto.items.reduce(
-      (sum, item) => sum + item.unitPrice * item.quantity,
-      0,
-    );
+    const subtotal = dto.items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
     const tax = Math.round(subtotal * 0.1 * 100) / 100; // 10% tax placeholder
     const total = subtotal + tax;
     const orderNumber = await this.generateOrderNumber();
@@ -41,7 +39,8 @@ export class OrderService {
           tax: new Prisma.Decimal(tax),
           total: new Prisma.Decimal(total),
           shippingAddress: dto.shippingAddress as unknown as Prisma.InputJsonValue,
-          billingAddress: dto.billingAddress as unknown as Prisma.InputJsonValue ?? Prisma.JsonNull,
+          billingAddress:
+            (dto.billingAddress as unknown as Prisma.InputJsonValue) ?? Prisma.JsonNull,
           notes: dto.notes,
           metadata: dto.couponCode ? { couponCode: dto.couponCode } : Prisma.JsonNull,
           placedAt: new Date(),
@@ -113,7 +112,7 @@ export class OrderService {
         take: limit,
         orderBy: { createdAt: 'desc' },
         include: {
-          items: { take: 3 },         // preview items
+          items: { take: 3 }, // preview items
           payments: { take: 1 },
           shipments: { take: 1 },
         },
@@ -190,7 +189,7 @@ export class OrderService {
       data: {
         status: OrderStatus.CANCELLED,
         timeline: {
-          create: { actor: userId, event: 'order.cancelled', data: null },
+          create: { actor: userId, event: 'order.cancelled', data: Prisma.JsonNull },
         },
       },
       include: { items: true, timeline: true },

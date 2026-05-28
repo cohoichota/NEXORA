@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { OpensearchModule } from './infrastructure/opensearch/opensearch.module';
+
 import { IndexerModule } from './application/indexer/indexer.module';
 import { SearchModule } from './application/search/search.module';
+import { OpensearchModule } from './infrastructure/opensearch/opensearch.module';
 
 @Module({
   imports: [

@@ -1,28 +1,89 @@
-import Link from 'next/link';
-import { ArrowRight, ShieldCheck, Truck, RefreshCcw, Headphones, Star, TrendingUp, Zap } from 'lucide-react';
+import {
+  ArrowRight,
+  ShieldCheck,
+  Truck,
+  RefreshCcw,
+  Headphones,
+  Star,
+  TrendingUp,
+  Zap,
+} from 'lucide-react';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Nexora — Your Premium Marketplace',
-  description: 'Discover millions of products from trusted sellers. Fast shipping, secure payments.',
+  description:
+    'Discover millions of products from trusted sellers. Fast shipping, secure payments.',
 };
 
 // ── Static Data (will be replaced with API calls in Phase 3) ─────
 
 const FEATURED_CATEGORIES = [
-  { name: 'Electronics', icon: '⚡', slug: 'electronics', gradient: 'from-blue-500 to-cyan-500', count: '12,400+' },
-  { name: 'Fashion', icon: '👗', slug: 'fashion', gradient: 'from-pink-500 to-rose-500', count: '89,200+' },
-  { name: 'Home & Living', icon: '🏡', slug: 'home-living', gradient: 'from-amber-500 to-orange-500', count: '34,100+' },
-  { name: 'Sports', icon: '🏃', slug: 'sports', gradient: 'from-green-500 to-emerald-500', count: '8,700+' },
-  { name: 'Beauty', icon: '💄', slug: 'beauty', gradient: 'from-purple-500 to-fuchsia-500', count: '21,300+' },
-  { name: 'Books', icon: '📚', slug: 'books', gradient: 'from-indigo-500 to-blue-500', count: '44,600+' },
+  {
+    name: 'Electronics',
+    icon: '⚡',
+    slug: 'electronics',
+    gradient: 'from-blue-500 to-cyan-500',
+    count: '12,400+',
+  },
+  {
+    name: 'Fashion',
+    icon: '👗',
+    slug: 'fashion',
+    gradient: 'from-pink-500 to-rose-500',
+    count: '89,200+',
+  },
+  {
+    name: 'Home & Living',
+    icon: '🏡',
+    slug: 'home-living',
+    gradient: 'from-amber-500 to-orange-500',
+    count: '34,100+',
+  },
+  {
+    name: 'Sports',
+    icon: '🏃',
+    slug: 'sports',
+    gradient: 'from-green-500 to-emerald-500',
+    count: '8,700+',
+  },
+  {
+    name: 'Beauty',
+    icon: '💄',
+    slug: 'beauty',
+    gradient: 'from-purple-500 to-fuchsia-500',
+    count: '21,300+',
+  },
+  {
+    name: 'Books',
+    icon: '📚',
+    slug: 'books',
+    gradient: 'from-indigo-500 to-blue-500',
+    count: '44,600+',
+  },
 ];
 
 const TRUST_FEATURES = [
   { icon: Truck, title: 'Free Shipping', desc: 'On orders over $50', color: 'text-blue-500' },
-  { icon: ShieldCheck, title: 'Buyer Protection', desc: '100% secure payments', color: 'text-green-500' },
-  { icon: RefreshCcw, title: 'Easy Returns', desc: '30-day return policy', color: 'text-purple-500' },
-  { icon: Headphones, title: '24/7 Support', desc: 'Always here to help', color: 'text-orange-500' },
+  {
+    icon: ShieldCheck,
+    title: 'Buyer Protection',
+    desc: '100% secure payments',
+    color: 'text-green-500',
+  },
+  {
+    icon: RefreshCcw,
+    title: 'Easy Returns',
+    desc: '30-day return policy',
+    color: 'text-purple-500',
+  },
+  {
+    icon: Headphones,
+    title: '24/7 Support',
+    desc: 'Always here to help',
+    color: 'text-orange-500',
+  },
 ];
 
 const STATS = [
@@ -35,7 +96,6 @@ const STATS = [
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-background">
-
       {/* ── HERO ─────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white">
         {/* Decorative grid */}
@@ -61,8 +121,8 @@ export default function HomePage() {
             </h1>
 
             <p className="mb-10 text-lg text-slate-300 md:text-xl max-w-2xl mx-auto text-pretty">
-              Nexora connects millions of buyers with top-rated sellers worldwide.
-              Discover unbeatable deals with AI-powered recommendations built just for you.
+              Nexora connects millions of buyers with top-rated sellers worldwide. Discover
+              unbeatable deals with AI-powered recommendations built just for you.
             </p>
 
             {/* Search bar */}
@@ -86,7 +146,13 @@ export default function HomePage() {
 
             {/* Popular tags */}
             <div className="flex flex-wrap justify-center gap-2">
-              {['Wireless Earbuds', 'Running Shoes', 'Coffee Maker', 'Gaming Chair', 'Skincare Set'].map((tag) => (
+              {[
+                'Wireless Earbuds',
+                'Running Shoes',
+                'Coffee Maker',
+                'Gaming Chair',
+                'Skincare Set',
+              ].map((tag) => (
                 <Link
                   key={tag}
                   href={`/search?q=${encodeURIComponent(tag)}`}
@@ -119,7 +185,9 @@ export default function HomePage() {
         <div className="container-nexora">
           <div className="mb-10 flex items-end justify-between">
             <div>
-              <p className="mb-1 text-sm font-semibold uppercase tracking-wider text-primary">Browse by</p>
+              <p className="mb-1 text-sm font-semibold uppercase tracking-wider text-primary">
+                Browse by
+              </p>
               <h2 className="text-3xl font-bold text-foreground">Shop Categories</h2>
             </div>
             <Link
@@ -138,7 +206,9 @@ export default function HomePage() {
                 className="group relative overflow-hidden rounded-2xl p-px card-hover"
                 id={`category-${cat.slug}`}
               >
-                <div className={`absolute inset-0 bg-gradient-to-br ${cat.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+                <div
+                  className={`absolute inset-0 bg-gradient-to-br ${cat.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
+                />
                 <div className="relative rounded-2xl border border-border bg-card p-6 text-center group-hover:border-transparent transition-colors duration-300">
                   <div className="mb-3 text-4xl">{cat.icon}</div>
                   <h3 className="font-semibold text-foreground text-sm">{cat.name}</h3>
@@ -155,7 +225,9 @@ export default function HomePage() {
         <div className="container-nexora">
           <div className="mb-10 flex items-end justify-between">
             <div>
-              <p className="mb-1 text-sm font-semibold uppercase tracking-wider text-primary">Hand-picked for you</p>
+              <p className="mb-1 text-sm font-semibold uppercase tracking-wider text-primary">
+                Hand-picked for you
+              </p>
               <h2 className="text-3xl font-bold text-foreground">Trending Now</h2>
             </div>
             <Link
@@ -191,7 +263,9 @@ export default function HomePage() {
                 key={title}
                 className="group flex flex-col items-center rounded-2xl border border-border bg-card p-8 text-center shadow-sm transition-all duration-200 hover:shadow-md hover:border-primary/20 hover:-translate-y-0.5"
               >
-                <div className={`mb-4 rounded-xl bg-muted p-3 transition-colors group-hover:bg-primary/5`}>
+                <div
+                  className={`mb-4 rounded-xl bg-muted p-3 transition-colors group-hover:bg-primary/5`}
+                >
                   <Icon className={`h-6 w-6 ${color}`} aria-hidden="true" />
                 </div>
                 <h3 className="mb-1 font-semibold text-foreground">{title}</h3>
@@ -209,11 +283,10 @@ export default function HomePage() {
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff10_1px,transparent_1px),linear-gradient(to_bottom,#ffffff10_1px,transparent_1px)] bg-[size:32px_32px]" />
             <div className="relative flex flex-col items-center gap-6 text-center md:flex-row md:text-left md:justify-between">
               <div>
-                <h2 className="text-3xl font-extrabold md:text-4xl">
-                  Start selling on Nexora
-                </h2>
+                <h2 className="text-3xl font-extrabold md:text-4xl">Start selling on Nexora</h2>
                 <p className="mt-2 max-w-lg text-indigo-100">
-                  Join 500K+ sellers earning more. Set up your store in minutes with zero listing fees.
+                  Join 500K+ sellers earning more. Set up your store in minutes with zero listing
+                  fees.
                 </p>
               </div>
               <div className="flex flex-shrink-0 gap-3">
@@ -229,7 +302,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
     </main>
   );
 }

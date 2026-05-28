@@ -114,6 +114,9 @@ export interface Product {
   inventory?: Inventory;
   rating?: number;
   reviewCount?: number;
+  image?: string;
+  name?: string;
+  isAvailable?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -171,6 +174,9 @@ export interface CartItem {
   quantity: number;
   price: number;
   product?: Product;
+  name?: string;
+  image?: string;
+  sku?: string;
 }
 
 // ── Order Types ──────────────────────────────────────────────────

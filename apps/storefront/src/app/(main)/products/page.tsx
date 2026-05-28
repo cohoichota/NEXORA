@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api/client';
-import { Button } from '@nexora/ui';
 import type { Product } from '@nexora/shared-types';
+import { Button } from '@nexora/ui';
+import { useQuery } from '@tanstack/react-query';
+import Link from 'next/link';
+import { useState } from 'react';
+
+import { apiClient } from '@/lib/api/client';
 
 interface ProductsResponse {
   data: Product[];
@@ -23,8 +24,10 @@ export default function ProductsPage() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['products', page, categoryId],
-    queryFn: () => 
-      apiClient.get<ProductsResponse>(`/products?page=${page}&limit=12${categoryId ? `&categoryId=${categoryId}` : ''}`),
+    queryFn: () =>
+      apiClient.get<ProductsResponse>(
+        `/products?page=${page}&limit=12${categoryId ? `&categoryId=${categoryId}` : ''}`,
+      ),
   });
 
   return (
@@ -38,7 +41,7 @@ export default function ProductsPage() {
         </div>
 
         <div className="mt-4 md:mt-0 flex gap-4">
-          <select 
+          <select
             value={categoryId}
             onChange={(e) => {
               setCategoryId(e.target.value);
@@ -58,7 +61,10 @@ export default function ProductsPage() {
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-            <div key={i} className="animate-pulse bg-slate-100 dark:bg-slate-800 rounded-2xl h-80"></div>
+            <div
+              key={i}
+              className="animate-pulse bg-slate-100 dark:bg-slate-800 rounded-2xl h-80"
+            ></div>
           ))}
         </div>
       ) : error ? (
@@ -77,7 +83,7 @@ export default function ProductsPage() {
                 <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800 xl:aspect-h-8 xl:aspect-w-7 border border-slate-200 dark:border-slate-700 transition-all hover:shadow-xl hover:shadow-indigo-500/10 group-hover:border-indigo-200 dark:group-hover:border-indigo-900/50">
                   <img
                     src={product.images[0]?.url || 'https://via.placeholder.com/400'}
-                    alt={product.name}
+                    alt={product.title}
                     className="h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
                   />
                   {!product.isAvailable && (
@@ -89,7 +95,7 @@ export default function ProductsPage() {
                 <div className="mt-4 flex justify-between">
                   <div>
                     <h3 className="text-sm font-medium text-slate-700 dark:text-slate-200 line-clamp-1">
-                      {product.name}
+                      {product.title}
                     </h3>
                     <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 line-clamp-1">
                       {product.description}
@@ -106,9 +112,9 @@ export default function ProductsPage() {
           {/* Pagination */}
           {data && data.meta.totalPages > 1 && (
             <div className="mt-12 flex items-center justify-center space-x-4">
-              <Button 
-                variant="outline" 
-                onClick={() => setPage(p => Math.max(1, p - 1))}
+              <Button
+                variant="outline"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
               >
                 Previous
@@ -116,9 +122,9 @@ export default function ProductsPage() {
               <span className="text-sm text-slate-600 dark:text-slate-400 font-medium">
                 Page {page} of {data.meta.totalPages}
               </span>
-              <Button 
-                variant="outline" 
-                onClick={() => setPage(p => Math.min(data.meta.totalPages, p + 1))}
+              <Button
+                variant="outline"
+                onClick={() => setPage((p) => Math.min(data.meta.totalPages, p + 1))}
                 disabled={page === data.meta.totalPages}
               >
                 Next

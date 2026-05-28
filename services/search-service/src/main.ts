@@ -1,8 +1,9 @@
-import { NestFactory } from '@nestjs/core';
-import { Transport, MicroserviceOptions } from '@nestjs/microservices';
-import { AppModule } from './app.module';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { NestFactory } from '@nestjs/core';
+import { Transport, MicroserviceOptions } from '@nestjs/microservices';
+
+import { AppModule } from './app.module';
 
 async function bootstrap() {
   const logger = new Logger('SearchService');
@@ -32,4 +33,6 @@ async function bootstrap() {
   await app.startAllMicroservices();
   logger.log(`Search Service Kafka Microservice connected`);
 }
-bootstrap();
+bootstrap().catch((err) => {
+  console.error('Failed to start search service', err);
+});

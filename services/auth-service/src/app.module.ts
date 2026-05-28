@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 
-import { HealthModule } from './infrastructure/health/health.module';
 import { AuthModule } from './application/auth/auth.module';
 import { PrismaModule } from './infrastructure/database/prisma/prisma.module';
-import { PrometheusModule } from '@willsoto/nestjs-prometheus';
+import { HealthModule } from './infrastructure/health/health.module';
 
 @Module({
   imports: [

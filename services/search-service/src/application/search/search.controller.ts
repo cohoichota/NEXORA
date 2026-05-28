@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Query, Body } from '@nestjs/common';
+
 import { OpensearchService } from '../../infrastructure/opensearch/opensearch.service';
 
 @Controller('search')
@@ -16,8 +17,14 @@ export class SearchController {
     const min = minPrice ? parseFloat(minPrice) : undefined;
     const max = maxPrice ? parseFloat(maxPrice) : undefined;
     const isAiSearch = ai === 'true';
-    
-    const results = await this.opensearchService.searchProducts(query, categoryId, min, max, isAiSearch);
+
+    const results = await this.opensearchService.searchProducts(
+      query,
+      categoryId,
+      min,
+      max,
+      isAiSearch,
+    );
     return { data: results, total: results.length };
   }
 

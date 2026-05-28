@@ -1,24 +1,19 @@
+import { randomBytes } from 'crypto';
+
 import {
   Injectable,
   ConflictException,
   UnauthorizedException,
   NotFoundException,
-  BadRequestException,
   Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
-import { randomBytes } from 'crypto';
 
-import { PrismaService } from '../../infrastructure/database/prisma/prisma.service';
 import { User, UserRole } from '../../domain/entities/user.entity';
-import {
-  RegisterDto,
-  LoginDto,
-  AuthResponseDto,
-  UserResponseDto,
-} from './auth.dto';
+import { PrismaService } from '../../infrastructure/database/prisma/prisma.service';
+
+import { RegisterDto, LoginDto, AuthResponseDto, UserResponseDto } from './auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -30,7 +25,6 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
-    private readonly config: ConfigService,
   ) {}
 
   // ── Register ───────────────────────────────────────────────
@@ -99,7 +93,9 @@ export class AuthService {
     }
 
     if (session.revokedAt) {
-      this.logger.warn(`Token replay detected for user ${session.userId}. Revoking all active sessions.`);
+      this.logger.warn(
+        `Token replay detected for user ${session.userId}. Revoking all active sessions.`,
+      );
       await this.logoutAll(session.userId);
       throw new UnauthorizedException('Security violation: Please log in again');
     }
@@ -161,9 +157,7 @@ export class AuthService {
     });
 
     const refreshToken = randomBytes(64).toString('hex');
-    const expiresAt = new Date(
-      Date.now() + this.REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000,
-    );
+    const expiresAt = new Date(Date.now() + this.REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000);
 
     await this.prisma.session.create({
       data: {

@@ -1,9 +1,10 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
-import { PrismaService } from '../../infrastructure/database/prisma/prisma.service';
 import { ClientKafka } from '@nestjs/microservices';
-import { KAFKA_CLIENT } from '../../infrastructure/kafka/kafka.module';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { OutboxStatus } from '@prisma/client';
+
+import { PrismaService } from '../../infrastructure/database/prisma/prisma.service';
+import { KAFKA_CLIENT } from '../../infrastructure/kafka/kafka.module';
 
 @Injectable()
 export class OutboxPollerService {
@@ -45,19 +46,20 @@ export class OutboxPollerService {
             where: { id: msg.id },
             data: { status: OutboxStatus.PROCESSED },
           });
-        } catch (error: any) {
-          this.logger.error(`Failed to process outbox message ${msg.id}: ${error.message}`);
+        } catch (error: unknown) {
+          const err = error as Error;
+          this.logger.error(`Failed to process outbox message ${msg.id}: ${err.message}`);
           await this.prisma.outboxMessage.update({
             where: { id: msg.id },
-            data: { 
+            data: {
               status: OutboxStatus.FAILED,
-              error: error.message || 'Unknown error',
+              error: err.message || 'Unknown error',
             },
           });
         }
       }
-    } catch (error: any) {
-      this.logger.error(`Error polling outbox: ${error.message}`);
+    } catch (error: unknown) {
+      this.logger.error(`Error polling outbox: ${(error as Error).message}`);
     } finally {
       this.isPolling = false;
     }

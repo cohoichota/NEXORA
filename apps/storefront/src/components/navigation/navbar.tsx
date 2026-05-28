@@ -1,8 +1,5 @@
 'use client';
 
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState, useEffect, useRef } from 'react';
 import {
   Search,
   ShoppingCart,
@@ -15,10 +12,13 @@ import {
   Moon,
   ChevronDown,
 } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
+import { useState, useEffect, useRef } from 'react';
 
-import { useCartStore } from '@/store/cart.store';
 import { useAuthStore } from '@/store/auth.store';
+import { useCartStore } from '@/store/cart.store';
 
 const NAV_LINKS = [
   { label: 'Products', href: '/products' },
@@ -66,12 +66,23 @@ export function Navbar() {
         <div className="container-nexora flex justify-between items-center">
           <span>🎉 Free shipping on orders over $50 — Shop now!</span>
           <div className="hidden md:flex gap-4">
-            <Link href="/help" className="hover:text-foreground transition-colors">Help</Link>
-            <Link href="/track-order" className="hover:text-foreground transition-colors">Track Order</Link>
+            <Link href="/help" className="hover:text-foreground transition-colors">
+              Help
+            </Link>
+            <Link href="/track-order" className="hover:text-foreground transition-colors">
+              Track Order
+            </Link>
             {!isAuthenticated && (
               <>
-                <Link href="/login" className="hover:text-foreground transition-colors">Sign In</Link>
-                <Link href="/register" className="hover:text-foreground transition-colors font-medium text-primary">Register</Link>
+                <Link href="/login" className="hover:text-foreground transition-colors">
+                  Sign In
+                </Link>
+                <Link
+                  href="/register"
+                  className="hover:text-foreground transition-colors font-medium text-primary"
+                >
+                  Register
+                </Link>
               </>
             )}
           </div>
@@ -80,7 +91,6 @@ export function Navbar() {
 
       {/* ── Main nav ─────────────────────────────────── */}
       <div className="container-nexora flex h-16 items-center gap-4">
-
         {/* Logo */}
         <Link
           href="/"
@@ -128,7 +138,6 @@ export function Navbar() {
 
         {/* Nav actions */}
         <div className="flex items-center gap-1 flex-shrink-0">
-
           {/* Theme toggle */}
           {mounted && (
             <button
@@ -159,7 +168,10 @@ export function Navbar() {
               id="nav-notifications"
             >
               <Bell className="h-5 w-5" />
-              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-destructive" aria-hidden="true" />
+              <span
+                className="absolute top-1 right-1 h-2 w-2 rounded-full bg-destructive"
+                aria-hidden="true"
+              />
             </button>
           )}
 
@@ -227,7 +239,10 @@ export function Navbar() {
             </Link>
           ))}
           <div className="ml-auto flex items-center gap-4 text-sm text-muted-foreground">
-            <Link href="/sell" className="font-medium text-primary hover:text-primary/80 transition-colors">
+            <Link
+              href="/sell"
+              className="font-medium text-primary hover:text-primary/80 transition-colors"
+            >
               Start Selling
             </Link>
           </div>
@@ -249,10 +264,16 @@ export function Navbar() {
               </Link>
             ))}
             <div className="mt-2 flex gap-2 border-t border-border pt-4">
-              <Link href="/login" className="flex-1 rounded-xl border border-border py-2.5 text-center text-sm font-medium text-foreground hover:bg-muted transition-colors">
+              <Link
+                href="/login"
+                className="flex-1 rounded-xl border border-border py-2.5 text-center text-sm font-medium text-foreground hover:bg-muted transition-colors"
+              >
                 Sign In
               </Link>
-              <Link href="/register" className="flex-1 rounded-xl bg-primary py-2.5 text-center text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors">
+              <Link
+                href="/register"
+                className="flex-1 rounded-xl bg-primary py-2.5 text-center text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
                 Register
               </Link>
             </div>

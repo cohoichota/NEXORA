@@ -1,8 +1,9 @@
 'use client';
 
-import { useCartStore } from '@/store/cart.store';
 import { Button } from '@nexora/ui';
 import Link from 'next/link';
+
+import { useCartStore } from '@/store/cart.store';
 
 export function CartDrawer() {
   const { isOpen, closeCart, items, itemCount, removeItem, updateQuantity } = useCartStore();
@@ -14,25 +15,29 @@ export function CartDrawer() {
   return (
     <>
       {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 transition-opacity" 
+      <div
+        className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 transition-opacity"
         onClick={closeCart}
       />
 
       {/* Drawer */}
       <div className="fixed inset-y-0 right-0 w-full md:w-96 bg-white dark:bg-slate-900 shadow-2xl z-50 transform transition-transform translate-x-0 flex flex-col">
-        
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
             Shopping Cart ({itemCount})
           </h2>
-          <button 
+          <button
             onClick={closeCart}
             className="p-2 -mr-2 text-slate-400 hover:text-slate-500 dark:hover:text-slate-300 transition-colors"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -43,7 +48,12 @@ export function CartDrawer() {
             <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
               <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-400">
                 <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
                 </svg>
               </div>
               <p className="text-slate-500 dark:text-slate-400">Your cart is empty.</p>
@@ -71,7 +81,7 @@ export function CartDrawer() {
                   </div>
                   <div className="flex flex-1 items-end justify-between text-sm">
                     <div className="flex items-center border border-slate-200 dark:border-slate-700 rounded-md">
-                      <button 
+                      <button
                         onClick={() => updateQuantity(item.id, item.quantity - 1)}
                         className="px-2 py-1 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                       >
@@ -80,7 +90,7 @@ export function CartDrawer() {
                       <span className="px-2 font-medium text-slate-700 dark:text-slate-300">
                         {item.quantity}
                       </span>
-                      <button 
+                      <button
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
                         className="px-2 py-1 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                       >

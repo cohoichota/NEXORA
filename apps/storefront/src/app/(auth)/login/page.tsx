@@ -1,16 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import type { User, AuthTokens } from '@nexora/shared-types';
+import { Button } from '@nexora/ui';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/store/auth.store';
-import { Button } from '@nexora/ui';
 
 export default function LoginPage() {
   const router = useRouter();
   const setAuth = useAuthStore((state) => state.setAuth);
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,7 +26,7 @@ export default function LoginPage() {
     const password = formData.get('password') as string;
 
     try {
-      const response = await apiClient.post<{ user: any; tokens: any }>('/auth/login', {
+      const response = await apiClient.post<{ user: User; tokens: AuthTokens }>('/auth/login', {
         email,
         password,
       });
@@ -32,8 +34,8 @@ export default function LoginPage() {
       setAuth(response.user, response.tokens);
       router.push('/');
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || 'Failed to sign in. Please check your credentials.');
+    } catch (err: unknown) {
+      setError((err as Error).message || 'Failed to sign in. Please check your credentials.');
     } finally {
       setIsLoading(false);
     }
@@ -54,7 +56,12 @@ export default function LoginPage() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form
+        onSubmit={(e) => {
+          handleSubmit(e).catch(console.error);
+        }}
+        className="space-y-5"
+      >
         <div>
           <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
             Email address
@@ -73,7 +80,10 @@ export default function LoginPage() {
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
               Password
             </label>
-            <Link href="/forgot-password" className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500">
+            <Link
+              href="/forgot-password"
+              className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500"
+            >
               Forgot password?
             </Link>
           </div>
@@ -97,7 +107,10 @@ export default function LoginPage() {
 
       <div className="mt-8 text-center text-sm text-slate-600 dark:text-slate-400">
         Don't have an account?{' '}
-        <Link href="/register" className="font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500">
+        <Link
+          href="/register"
+          className="font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500"
+        >
           Create an account
         </Link>
       </div>

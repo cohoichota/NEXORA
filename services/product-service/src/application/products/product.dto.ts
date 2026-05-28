@@ -1,3 +1,5 @@
+import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsString,
   IsEnum,
@@ -11,8 +13,6 @@ import {
   Min,
   IsUUID,
 } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
 
 // ── Product Status ─────────────────────────────────────────────
 

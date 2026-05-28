@@ -19,8 +19,8 @@ import {
   ApiHeader,
 } from '@nestjs/swagger';
 
-import { CartService } from './cart.service';
 import { AddToCartDto, UpdateCartItemDto, MergeCartDto } from './cart.dto';
+import { CartService } from './cart.service';
 
 // ────────────────────────────────────────────────────────────
 // NOTE: Auth is JWT-verified at the API Gateway layer.
@@ -51,10 +51,7 @@ export class CartController {
   @ApiHeader({ name: 'x-user-id', required: true })
   @ApiOperation({ summary: 'Add an item to the cart' })
   @ApiResponse({ status: 201, description: 'Updated cart returned' })
-  async addItem(
-    @Headers('x-user-id') userId: string,
-    @Body() dto: AddToCartDto,
-  ) {
+  async addItem(@Headers('x-user-id') userId: string, @Body() dto: AddToCartDto) {
     return this.cartService.addItem(userId, dto);
   }
 
@@ -81,10 +78,7 @@ export class CartController {
   @ApiHeader({ name: 'x-user-id', required: true })
   @ApiParam({ name: 'itemId' })
   @ApiOperation({ summary: 'Remove an item from the cart' })
-  async removeItem(
-    @Headers('x-user-id') userId: string,
-    @Param('itemId') itemId: string,
-  ) {
+  async removeItem(@Headers('x-user-id') userId: string, @Param('itemId') itemId: string) {
     return this.cartService.removeItem(userId, itemId);
   }
 
@@ -106,10 +100,7 @@ export class CartController {
   @ApiBearerAuth()
   @ApiHeader({ name: 'x-user-id', required: true })
   @ApiOperation({ summary: 'Merge guest cart into user cart (called after login)' })
-  async mergeCart(
-    @Headers('x-user-id') userId: string,
-    @Body() dto: MergeCartDto,
-  ) {
+  async mergeCart(@Headers('x-user-id') userId: string, @Body() dto: MergeCartDto) {
     return this.cartService.mergeCart(userId, dto);
   }
 
@@ -125,10 +116,7 @@ export class CartController {
   @Post('cart/guest/:guestId/items')
   @ApiParam({ name: 'guestId' })
   @ApiOperation({ summary: 'Add item to guest cart' })
-  async addGuestItem(
-    @Param('guestId') guestId: string,
-    @Body() dto: AddToCartDto,
-  ) {
+  async addGuestItem(@Param('guestId') guestId: string, @Body() dto: AddToCartDto) {
     return this.cartService.addGuestItem(guestId, dto);
   }
 }

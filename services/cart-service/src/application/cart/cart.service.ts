@@ -1,25 +1,25 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+
 import { RedisService } from '../../infrastructure/redis/redis.service';
-import {
-  CartData,
-  CartItemData,
-  AddToCartDto,
-  UpdateCartItemDto,
-  MergeCartDto,
-} from './cart.dto';
+
+import { CartData, CartItemData, AddToCartDto, UpdateCartItemDto, MergeCartDto } from './cart.dto';
 
 @Injectable()
 export class CartService {
   private readonly logger = new Logger(CartService.name);
   private readonly TTL_SECONDS = 7 * 24 * 60 * 60; // 7 days
-  private readonly GUEST_TTL = 24 * 60 * 60;        // 1 day
+  private readonly GUEST_TTL = 24 * 60 * 60; // 1 day
 
   constructor(private readonly redis: RedisService) {}
 
   // ── Key helpers ────────────────────────────────────────────
 
-  private userKey(userId: string) { return `cart:user:${userId}`; }
-  private guestKey(guestId: string) { return `cart:guest:${guestId}`; }
+  private userKey(userId: string) {
+    return `cart:user:${userId}`;
+  }
+  private guestKey(guestId: string) {
+    return `cart:guest:${guestId}`;
+  }
 
   // ── Get cart ───────────────────────────────────────────────
 

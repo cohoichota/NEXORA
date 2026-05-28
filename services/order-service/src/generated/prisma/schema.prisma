@@ -1,0 +1,208 @@
+// ═══════════════════════════════════════════════════════════════
+// Nexora — Order Service Prisma Schema
+// Manages: orders, order items, shipping, payments
+// ═══════════════════════════════════════════════════════════════
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Order ─────────────────────────────────────────────────────
+
+model Order {
+  id     String @id @default(uuid())
+  number String @unique // human-readable: NEX-2026-001234
+  userId String
+
+  status   OrderStatus @default(PENDING)
+  currency String      @default("USD")
+
+  subtotal Decimal @db.Decimal(12, 2)
+  shipping Decimal @default(0) @db.Decimal(12, 2)
+  tax      Decimal @default(0) @db.Decimal(12, 2)
+  discount Decimal @default(0) @db.Decimal(12, 2)
+  total    Decimal @db.Decimal(12, 2)
+
+  // Snapshot addresses at order time
+  shippingAddress Json // { name, line1, line2, city, state, postalCode, country }
+  billingAddress  Json?
+
+  notes    String?
+  metadata Json? // extensible: couponCode, etc.
+
+  placedAt  DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  items     OrderItem[]
+  payments  Payment[]
+  shipments Shipment[]
+  timeline  OrderEvent[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([number])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+enum OrderStatus {
+  PENDING // just created, awaiting payment
+  PAYMENT_PENDING // payment initiated
+  PAID // payment confirmed
+  PROCESSING // seller preparing
+  SHIPPED // dispatched
+  DELIVERED // confirmed delivered
+  CANCELLED
+  REFUNDED
+}
+
+// ── Order Item ─────────────────────────────────────────────────
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  productId String
+  variantId String?
+  sellerId  String
+
+  title    String // snapshot
+  sku      String?
+  imageUrl String?
+
+  quantity   Int
+  unitPrice  Decimal @db.Decimal(12, 2)
+  totalPrice Decimal @db.Decimal(12, 2)
+
+  status    ItemStatus @default(PENDING)
+  createdAt DateTime   @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([sellerId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+enum ItemStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+// ── Payment ────────────────────────────────────────────────────
+
+model Payment {
+  id            String          @id @default(uuid())
+  orderId       String
+  provider      PaymentProvider
+  providerRef   String? // Stripe PaymentIntent ID, etc.
+  amount        Decimal         @db.Decimal(12, 2)
+  currency      String          @default("USD")
+  status        PaymentStatus   @default(PENDING)
+  method        String? // "card", "wallet", etc.
+  failureReason String?
+  metadata      Json?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([providerRef])
+  @@map("payments")
+}
+
+enum PaymentProvider {
+  STRIPE
+  PAYPAL
+  WALLET
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+// ── Shipment ───────────────────────────────────────────────────
+
+model Shipment {
+  id             String         @id @default(uuid())
+  orderId        String
+  trackingNumber String?
+  carrier        String? // "FedEx", "UPS", etc.
+  status         ShipmentStatus @default(PENDING)
+  estimatedAt    DateTime?
+  shippedAt      DateTime?
+  deliveredAt    DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@map("shipments")
+}
+
+enum ShipmentStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  FAILED
+}
+
+// ── Order Timeline / Audit Trail ───────────────────────────────
+
+model OrderEvent {
+  id        String   @id @default(uuid())
+  orderId   String
+  actor     String // userId or "system"
+  event     String // "order.created", "payment.succeeded", etc.
+  data      Json?
+  createdAt DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([createdAt])
+  @@map("order_events")
+}
+
+// ── Outbox Pattern ─────────────────────────────────────────────
+
+model OutboxMessage {
+  id        String       @id @default(uuid())
+  topic     String
+  type      String
+  payload   Json
+  status    OutboxStatus @default(PENDING)
+  error     String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@index([status, createdAt])
+  @@map("outbox_messages")
+}
+
+enum OutboxStatus {
+  PENDING
+  PROCESSED
+  FAILED
+}

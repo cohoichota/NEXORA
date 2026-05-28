@@ -1,5 +1,6 @@
 import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+
+import { PrismaClient } from '../../../generated/prisma';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
@@ -22,7 +23,12 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
     // Log slow queries in development
     if (process.env.NODE_ENV !== 'production') {
-      (this.$on as unknown as Function)('query', (event: { duration: number; query: string }) => {
+      (
+        this.$on as unknown as (
+          event: string,
+          listener: (event: { duration: number; query: string }) => void,
+        ) => void
+      )('query', (event: { duration: number; query: string }) => {
         if (event.duration > 200) {
           this.logger.warn(`Slow query (${event.duration}ms): ${event.query}`);
         }
@@ -37,9 +43,14 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
   /** Helper for soft deletes — adds deletedAt timestamp */
   async softDelete(model: string, id: string): Promise<void> {
-    await (this as any)[model].update({
-      where: { id },
-      data: { deletedAt: new Date() },
-    });
+    const delegate = (
+      this as unknown as Record<string, { update: (args: unknown) => Promise<unknown> }>
+    )[model];
+    if (delegate) {
+      await delegate.update({
+        where: { id },
+        data: { deletedAt: new Date() },
+      });
+    }
   }
 }

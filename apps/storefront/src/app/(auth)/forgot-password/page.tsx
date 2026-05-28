@@ -1,17 +1,17 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
 import { Button } from '@nexora/ui';
+import Link from 'next/link';
+import { useState } from 'react';
 
 export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSent, setIsSent] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     // Simulate API call for forgot password
     setTimeout(() => {
       setIsLoading(false);
@@ -24,7 +24,7 @@ export default function ForgotPasswordPage() {
       <div className="text-center mb-8">
         <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Reset password</h2>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
-          {isSent 
+          {isSent
             ? 'We have sent a reset link to your email.'
             : 'Enter your email to receive a password reset link.'}
         </p>
@@ -67,7 +67,10 @@ export default function ForgotPasswordPage() {
 
       <div className="mt-8 text-center text-sm text-slate-600 dark:text-slate-400">
         Remember your password?{' '}
-        <Link href="/login" className="font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500">
+        <Link
+          href="/login"
+          className="font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500"
+        >
           Back to login
         </Link>
       </div>

@@ -12,7 +12,8 @@
     "clean": "turbo run clean && rm -rf node_modules",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\"",
-    "prepare": "husky"
+    "prepare": "husky",
+    "docker:dev": "docker compose -f docker/local/docker-compose.local.yml up --build"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.0.0",

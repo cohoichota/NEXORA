@@ -1,3 +1,5 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsString,
   IsUUID,
@@ -10,8 +12,6 @@ import {
   Min,
   MinLength,
 } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
 
 // ── Address ────────────────────────────────────────────────────
 
@@ -22,7 +22,7 @@ export class AddressDto {
   @ApiProperty() @IsString() city: string;
   @ApiPropertyOptional() @IsString() @IsOptional() state?: string;
   @ApiProperty() @IsString() postalCode: string;
-  @ApiProperty() @IsString() country: string;    // ISO 2-letter
+  @ApiProperty() @IsString() country: string; // ISO 2-letter
 }
 
 // ── Order Item ─────────────────────────────────────────────────
@@ -100,5 +100,8 @@ export class UpdateOrderStatusDto {
 export class OrderQueryDto {
   @ApiPropertyOptional() @IsOptional() @Type(() => Number) page?: number = 1;
   @ApiPropertyOptional() @IsOptional() @Type(() => Number) limit?: number = 20;
-  @ApiPropertyOptional({ enum: OrderStatus }) @IsEnum(OrderStatus) @IsOptional() status?: OrderStatus;
+  @ApiPropertyOptional({ enum: OrderStatus })
+  @IsEnum(OrderStatus)
+  @IsOptional()
+  status?: OrderStatus;
 }

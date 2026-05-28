@@ -1,16 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import type { User, AuthTokens } from '@nexora/shared-types';
+import { Button } from '@nexora/ui';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/store/auth.store';
-import { Button } from '@nexora/ui';
 
 export default function RegisterPage() {
   const router = useRouter();
   const setAuth = useAuthStore((state) => state.setAuth);
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,7 +28,7 @@ export default function RegisterPage() {
     const password = formData.get('password') as string;
 
     try {
-      const response = await apiClient.post<{ user: any; tokens: any }>('/auth/register', {
+      const response = await apiClient.post<{ user: User; tokens: AuthTokens }>('/auth/register', {
         firstName,
         lastName,
         email,
@@ -36,8 +38,8 @@ export default function RegisterPage() {
       setAuth(response.user, response.tokens);
       router.push('/');
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || 'Failed to create account. Please try again.');
+    } catch (err: unknown) {
+      setError((err as Error).message || 'Failed to create account. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -58,7 +60,12 @@ export default function RegisterPage() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form
+        onSubmit={(e) => {
+          handleSubmit(e).catch(console.error);
+        }}
+        className="space-y-5"
+      >
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
@@ -125,7 +132,10 @@ export default function RegisterPage() {
 
       <div className="mt-8 text-center text-sm text-slate-600 dark:text-slate-400">
         Already have an account?{' '}
-        <Link href="/login" className="font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500">
+        <Link
+          href="/login"
+          className="font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500"
+        >
           Sign in
         </Link>
       </div>

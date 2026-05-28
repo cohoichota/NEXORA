@@ -1,6 +1,7 @@
 import { Module, Global } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Client } from '@opensearch-project/opensearch';
+
 import { OpensearchService } from './opensearch.service';
 
 @Global()
@@ -18,7 +19,7 @@ import { OpensearchService } from './opensearch.service';
           },
           ssl: {
             rejectUnauthorized: false,
-          }
+          },
         });
       },
     },

@@ -1,5 +1,6 @@
 import { Controller, Logger } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
+
 import { PaymentService } from '../payments/payment.service';
 
 @Controller()
@@ -9,9 +10,19 @@ export class PaymentSagaController {
   constructor(private readonly paymentService: PaymentService) {}
 
   @EventPattern('nexora.orders')
-  async handleOrderEvents(@Payload() message: any) {
+  async handleOrderEvents(
+    @Payload()
+    message: {
+      value?: {
+        type: string;
+        payload: { orderId: string; userId: string; totalAmount: number; currency: string };
+      };
+      type?: string;
+      payload?: { orderId: string; userId: string; totalAmount: number; currency: string };
+    },
+  ) {
     const event = message.value || message;
-    
+
     if (!event || !event.type) return;
 
     if (event.type === 'ORDER_CREATED') {

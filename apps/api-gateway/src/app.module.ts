@@ -1,13 +1,12 @@
-import { Module, MiddlewareConsumer, NestModule, RequestMethod } from '@nestjs/common';
+import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { JwtModule } from '@nestjs/jwt';
-import { createProxyMiddleware } from 'http-proxy-middleware';
-
-import { HealthModule } from './infrastructure/health/health.module';
-import { AuthMiddleware } from './infrastructure/auth/auth.middleware';
-import { PrometheusModule } from '@willsoto/nestjs-prometheus';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { JwtModule } from '@nestjs/jwt';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
+
+import { AuthMiddleware } from './infrastructure/auth/auth.middleware';
+import { HealthModule } from './infrastructure/health/health.module';
 
 @Module({
   imports: [
@@ -24,10 +23,12 @@ import { APP_GUARD } from '@nestjs/core';
     }),
     HealthModule,
     PrometheusModule.register(),
-    ThrottlerModule.forRoot([{
-      ttl: 60000,
-      limit: 100, // 100 req per minute globally
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 100, // 100 req per minute globally
+      },
+    ]),
   ],
   providers: [
     {
@@ -37,7 +38,7 @@ import { APP_GUARD } from '@nestjs/core';
   ],
 })
 export class AppModule implements NestModule {
-  constructor(private readonly config: ConfigService) {}
+  constructor() {}
 
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(AuthMiddleware).forRoutes('*');

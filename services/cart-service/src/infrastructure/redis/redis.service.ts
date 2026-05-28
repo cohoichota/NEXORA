@@ -24,7 +24,7 @@ export class RedisService extends Redis implements OnModuleInit, OnModuleDestroy
     this.on('reconnecting', () => this.logger.warn('Redis reconnecting...'));
   }
 
-  async onModuleDestroy() {
+  onModuleDestroy() {
     this.logger.log('Disconnecting from Redis...');
     this.disconnect();
   }

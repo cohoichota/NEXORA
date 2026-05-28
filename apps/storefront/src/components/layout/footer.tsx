@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import { Github, Twitter, Linkedin, Mail } from 'lucide-react';
+import Link from 'next/link';
 
 const FOOTER_LINKS = {
   Company: [
@@ -38,7 +38,6 @@ export function Footer() {
   return (
     <footer className="border-t border-border bg-muted/30 mt-12">
       <div className="container-nexora py-16">
-
         {/* Top section */}
         <div className="grid grid-cols-2 gap-8 md:grid-cols-5">
           {/* Brand */}

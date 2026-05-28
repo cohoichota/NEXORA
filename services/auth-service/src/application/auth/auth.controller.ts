@@ -9,16 +9,14 @@ import {
   UseGuards,
   Res,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 
-import { AuthService } from './auth.service';
+import type { User } from '../../domain/entities/user.entity';
+import { CurrentUser } from '../../infrastructure/decorators/current-user.decorator';
+import { JwtAuthGuard } from '../../infrastructure/guards/jwt-auth.guard';
+
 import {
   RegisterDto,
   LoginDto,
@@ -26,9 +24,7 @@ import {
   AuthResponseDto,
   UserResponseDto,
 } from './auth.dto';
-import { JwtAuthGuard } from '../../infrastructure/guards/jwt-auth.guard';
-import { CurrentUser } from '../../infrastructure/decorators/current-user.decorator';
-import type { User } from '../../domain/entities/user.entity';
+import { AuthService } from './auth.service';
 
 @ApiTags('auth')
 @Controller('auth')

@@ -19,8 +19,8 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 
-import { OrderService } from './order.service';
 import { CreateOrderDto, UpdateOrderStatusDto, OrderQueryDto } from './order.dto';
+import { OrderService } from './order.service';
 
 // ────────────────────────────────────────────────────────────
 // NOTE: Auth is JWT-verified at the API Gateway layer.
@@ -39,10 +39,7 @@ export class OrderController {
   @ApiHeader({ name: 'x-user-id', required: true })
   @ApiOperation({ summary: 'Create a new order' })
   @ApiResponse({ status: 201, description: 'Order created' })
-  async createOrder(
-    @Headers('x-user-id') userId: string,
-    @Body() dto: CreateOrderDto,
-  ) {
+  async createOrder(@Headers('x-user-id') userId: string, @Body() dto: CreateOrderDto) {
     return this.orderService.createOrder(userId, dto);
   }
 
@@ -52,10 +49,7 @@ export class OrderController {
   @ApiBearerAuth()
   @ApiHeader({ name: 'x-user-id', required: true })
   @ApiOperation({ summary: 'List orders for authenticated user' })
-  async findUserOrders(
-    @Headers('x-user-id') userId: string,
-    @Query() query: OrderQueryDto,
-  ) {
+  async findUserOrders(@Headers('x-user-id') userId: string, @Query() query: OrderQueryDto) {
     return this.orderService.findUserOrders(userId, query);
   }
 
@@ -105,10 +99,7 @@ export class OrderController {
   @ApiHeader({ name: 'x-user-id', required: true })
   @ApiParam({ name: 'id' })
   @ApiOperation({ summary: 'Cancel a pending order' })
-  async cancelOrder(
-    @Headers('x-user-id') userId: string,
-    @Param('id') orderId: string,
-  ) {
+  async cancelOrder(@Headers('x-user-id') userId: string, @Param('id') orderId: string) {
     return this.orderService.cancelOrder(orderId, userId);
   }
 }

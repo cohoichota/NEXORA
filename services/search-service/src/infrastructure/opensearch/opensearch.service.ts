@@ -1,6 +1,6 @@
+import { GoogleGenAI } from '@google/genai';
 import { Injectable, Inject, OnModuleInit, Logger } from '@nestjs/common';
 import { Client } from '@opensearch-project/opensearch';
-import { GoogleGenAI } from '@google/genai';
 
 @Injectable()
 export class OpensearchService implements OnModuleInit {
@@ -64,22 +64,36 @@ export class OpensearchService implements OnModuleInit {
   async generateEmbedding(text: string): Promise<number[]> {
     if (!process.env.GEMINI_API_KEY) {
       // Mock embedding if no API key is provided
-      return Array(768).fill(0).map(() => Math.random() - 0.5);
+      return Array(768)
+        .fill(0)
+        .map(() => Math.random() - 0.5);
     }
-    
+
     try {
       const response = await this.ai.models.embedContent({
         model: 'text-embedding-004',
         contents: text,
       });
-      return response.embeddings[0].values;
+      if (!response.embeddings || response.embeddings.length === 0) {
+        throw new Error('Gemini returned an empty embedding array');
+      }
+      return response.embeddings[0].values || [];
     } catch (error) {
       this.logger.error('Failed to generate embedding', error);
-      return Array(768).fill(0).map(() => Math.random() - 0.5);
+      return Array(768)
+        .fill(0)
+        .map(() => Math.random() - 0.5);
     }
   }
 
-  async indexProduct(product: any) {
+  async indexProduct(
+    product: Record<string, unknown> & {
+      id: string;
+      name: string;
+      description?: string;
+      tags?: string[];
+    },
+  ) {
     try {
       const textToEmbed = `${product.name} ${product.description || ''} ${product.tags?.join(' ') || ''}`;
       const embedding = await this.generateEmbedding(textToEmbed);
@@ -107,23 +121,32 @@ export class OpensearchService implements OnModuleInit {
         refresh: true,
       });
       this.logger.log(`Deleted product: ${id}`);
-    } catch (error: any) {
-      if (error.meta?.statusCode === 404) return; // Ignore if already not found
+    } catch (error: unknown) {
+      const err = error as { meta?: { statusCode: number } };
+      if (err.meta?.statusCode === 404) return; // Ignore if already not found
       this.logger.error(`Failed to delete product: ${id}`, error);
     }
   }
 
-  async searchProducts(query: string, categoryId?: string, minPrice?: number, maxPrice?: number, aiSearch: boolean = false) {
-    const filter: any[] = [{ term: { isAvailable: true } }];
+  async searchProducts(
+    query: string,
+    categoryId?: string,
+    minPrice?: number,
+    maxPrice?: number,
+    aiSearch = false,
+  ) {
+    const filter: Record<string, unknown>[] = [{ term: { isAvailable: true } }];
     if (categoryId) filter.push({ term: { categoryId } });
     if (minPrice !== undefined || maxPrice !== undefined) {
-      const range: any = {};
+      const range: Record<string, number> = {};
       if (minPrice !== undefined) range.gte = minPrice;
       if (maxPrice !== undefined) range.lte = maxPrice;
       filter.push({ range: { price: range } });
     }
 
-    let searchBody: any = {
+    const searchBody: {
+      query: { bool: { filter: Record<string, unknown>[]; must?: Record<string, unknown> } };
+    } = {
       query: {
         bool: { filter },
       },
@@ -158,18 +181,24 @@ export class OpensearchService implements OnModuleInit {
       body: searchBody,
     });
 
-    return body.hits.hits.map((hit: any) => hit._source);
+    return (body.hits.hits as Array<{ _source: Record<string, unknown> }>).map(
+      (hit) => hit._source,
+    );
   }
 
   // Generate Chat Response using RAG
   async chat(userMessage: string) {
     // 1. Semantic Search for context
     const products = await this.searchProducts(userMessage, undefined, undefined, undefined, true);
-    
+
     // 2. Construct context string
-    const context = products.slice(0, 3).map((p: any) => 
-      `- ${p.name} ($${p.price}): ${p.description || 'No description'}`
-    ).join('\n');
+    const context = products
+      .slice(0, 3)
+      .map(
+        (p: { name: string; price: number; description?: string }) =>
+          `- ${p.name} ($${p.price}): ${p.description || 'No description'}`,
+      )
+      .join('\n');
 
     // 3. Prompt LLM
     if (!process.env.GEMINI_API_KEY) {
@@ -178,7 +207,7 @@ export class OpensearchService implements OnModuleInit {
 
     try {
       const prompt = `You are Nexora, a helpful AI shopping assistant. Use the following product catalog context to answer the user's question. If the user asks for products, recommend from the context below. Keep it concise, friendly, and output in markdown format.\n\nContext:\n${context}\n\nUser Question: ${userMessage}`;
-      
+
       const response = await this.ai.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: prompt,

@@ -1,7 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
+import {
+  OrderCreatedEvent,
+  PaymentProcessedEvent,
+  PaymentFailedEvent,
+  PaymentEventTypes,
+} from '@nexora/kafka-events';
+
+import { PaymentStatus, PaymentProvider } from '../../generated/prisma';
 import { PrismaService } from '../../infrastructure/database/prisma/prisma.service';
-import { PaymentStatus, PaymentProvider } from '@prisma/client';
-import { OrderCreatedEvent, PaymentProcessedEvent, PaymentFailedEvent, PaymentEventTypes } from '@nexora/kafka-events';
 
 @Injectable()
 export class PaymentService {
@@ -10,7 +16,9 @@ export class PaymentService {
   constructor(private readonly prisma: PrismaService) {}
 
   async processOrderPayment(payload: OrderCreatedEvent['payload']) {
-    this.logger.log(`Processing payment for Order ${payload.orderId} - Amount: ${payload.totalAmount}`);
+    this.logger.log(
+      `Processing payment for Order ${payload.orderId} - Amount: ${payload.totalAmount}`,
+    );
 
     try {
       // Step 1: Create a pending payment record
@@ -22,7 +30,7 @@ export class PaymentService {
           currency: payload.currency,
           provider: PaymentProvider.MOCK,
           status: PaymentStatus.PROCESSING,
-        }
+        },
       });
 
       // Step 2: Attempt to charge via Stripe (Mocked)
@@ -30,14 +38,14 @@ export class PaymentService {
 
       if (isSuccess) {
         const paymentIntentId = `pi_mock_${Date.now()}`;
-        
+
         await this.prisma.$transaction(async (tx) => {
           payment = await tx.payment.update({
             where: { id: payment.id },
             data: {
               status: PaymentStatus.SUCCEEDED,
               providerRef: paymentIntentId,
-            }
+            },
           });
 
           const successEvent: PaymentProcessedEvent = {
@@ -46,15 +54,16 @@ export class PaymentService {
               orderId: payload.orderId,
               paymentId: payment.id,
               status: 'SUCCESS',
-            }
+            },
           };
 
           await tx.outboxMessage.create({
             data: {
               topic: 'nexora.payments',
               type: successEvent.type,
-              payload: successEvent.payload as any,
-            }
+              payload:
+                successEvent.payload as unknown as import('@prisma/client').Prisma.InputJsonValue,
+            },
           });
         });
 
@@ -62,9 +71,10 @@ export class PaymentService {
       } else {
         throw new Error('Insufficient funds (Mock Error)');
       }
-    } catch (error: any) {
-      this.logger.error(`Payment failed for Order ${payload.orderId}: ${error.message}`);
-      
+    } catch (error: unknown) {
+      const err = error as Error;
+      this.logger.error(`Payment failed for Order ${payload.orderId}: ${err.message}`);
+
       await this.prisma.$transaction(async (tx) => {
         await tx.payment.upsert({
           where: { orderId: payload.orderId },
@@ -75,28 +85,29 @@ export class PaymentService {
             currency: payload.currency,
             provider: PaymentProvider.MOCK,
             status: PaymentStatus.FAILED,
-            failureReason: error.message,
+            failureReason: err.message,
           },
           update: {
             status: PaymentStatus.FAILED,
-            failureReason: error.message,
-          }
+            failureReason: err.message,
+          },
         });
 
         const failureEvent: PaymentFailedEvent = {
           type: PaymentEventTypes.PAYMENT_FAILED,
           payload: {
             orderId: payload.orderId,
-            reason: error.message,
-          }
+            reason: err.message,
+          },
         };
 
         await tx.outboxMessage.create({
           data: {
             topic: 'nexora.payments',
             type: failureEvent.type,
-            payload: failureEvent.payload as any,
-          }
+            payload:
+              failureEvent.payload as unknown as import('@prisma/client').Prisma.InputJsonValue,
+          },
         });
       });
     }

@@ -13,6 +13,15 @@ cd "$ROOT_DIR/services/cart-service" && pnpm exec ts-node-dev --respawn --transp
 echo "Starting Order Service..."
 cd "$ROOT_DIR/services/order-service" && pnpm exec ts-node-dev --respawn --transpile-only src/main.ts > /tmp/order.log 2>&1 &
 
+echo "Starting Payment Service..."
+cd "$ROOT_DIR/services/payment-service" && pnpm exec ts-node-dev --respawn --transpile-only src/main.ts > /tmp/payment.log 2>&1 &
+
+echo "Starting Search Service..."
+cd "$ROOT_DIR/services/search-service" && pnpm exec ts-node-dev --respawn --transpile-only src/main.ts > /tmp/search.log 2>&1 &
+
+echo "Starting Notification Service..."
+cd "$ROOT_DIR/services/notification-service" && pnpm exec ts-node-dev --respawn --transpile-only src/main.ts > /tmp/notification.log 2>&1 &
+
 echo "Starting API Gateway..."
 cd "$ROOT_DIR/apps/api-gateway" && pnpm exec ts-node-dev --respawn --transpile-only src/main.ts > /tmp/gateway.log 2>&1 &
 

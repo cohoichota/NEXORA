@@ -1,0 +1,29 @@
+FROM node:20-alpine
+
+# OpenSSL and libc6-compat needed for Prisma on Alpine
+RUN apk add --no-cache openssl libc6-compat
+
+WORKDIR /app
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy workspace setup
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY packages ./packages
+
+# Copy all apps and services
+COPY apps ./apps
+COPY services ./services
+
+# Install dependencies for the whole workspace
+RUN pnpm install
+
+# Generate all Prisma clients (ignoring errors for services without schemas)
+RUN pnpm --filter @nexora/auth-service exec prisma generate || true
+RUN pnpm --filter @nexora/product-service exec prisma generate || true
+RUN pnpm --filter @nexora/order-service exec prisma generate || true
+RUN pnpm --filter @nexora/payment-service exec prisma generate || true
+
+# The default command will be overridden by docker-compose to target a specific service
+CMD ["pnpm", "dev"]

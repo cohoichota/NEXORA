@@ -1,19 +1,23 @@
 'use client';
 
-import { useState } from 'react';
+import type { Product } from '@nexora/shared-types';
+import { Button } from '@nexora/ui';
 import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+
 import { apiClient } from '@/lib/api/client';
 import { useCartStore } from '@/store/cart.store';
-import { Button } from '@nexora/ui';
-import type { Product } from '@nexora/shared-types';
 
 export default function ProductDetailPage({ params }: { params: { slug: string } }) {
-  const [selectedVariant, setSelectedVariant] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
-  
+
   const { addItem, openCart } = useCartStore();
 
-  const { data: product, isLoading, error } = useQuery({
+  const {
+    data: product,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['product', params.slug],
     queryFn: () => apiClient.get<Product>(`/products/${params.slug}`),
   });
@@ -41,19 +45,17 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
   }
 
   const handleAddToCart = () => {
-    // Determine exact price if variants have price modifiers
-    const price = Number(product.price);
-    
     addItem({
-      id: selectedVariant ? `${product.id}-${selectedVariant}` : product.id,
+      id: product.id,
+      cartId: 'temp',
       productId: product.id,
-      name: product.name,
-      price,
-      quantity,
-      image: product.images?.[0]?.url,
-      sku: product.sku,
+      name: product.title,
+      price: product.price,
+      quantity: quantity,
+      image: product.images?.[0]?.url || '',
+      sku: product.variants?.[0]?.sku || '',
     });
-    
+
     openCart();
   };
 
@@ -65,7 +67,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
           <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-800">
             <img
               src={product.images?.[0]?.url || 'https://via.placeholder.com/800'}
-              alt={product.name}
+              alt={product.title}
               className="h-full w-full object-cover object-center"
             />
           </div>
@@ -74,9 +76,9 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
         {/* Product Info */}
         <div className="mt-10 px-4 sm:px-0 lg:mt-0">
           <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-            {product.name}
+            {product.title}
           </h1>
-          
+
           <div className="mt-3">
             <h2 className="sr-only">Product information</h2>
             <p className="text-3xl tracking-tight text-indigo-600 dark:text-indigo-400 font-medium">
@@ -95,17 +97,15 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
             <div className="flex items-center space-x-4">
               <span className="text-sm font-medium text-slate-900 dark:text-white">Quantity</span>
               <div className="flex items-center border border-slate-200 dark:border-slate-700 rounded-lg">
-                <button 
-                  onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                <button
+                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                   className="px-4 py-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                 >
                   -
                 </button>
-                <span className="px-4 font-medium text-slate-900 dark:text-white">
-                  {quantity}
-                </span>
-                <button 
-                  onClick={() => setQuantity(q => q + 1)}
+                <span className="px-4 font-medium text-slate-900 dark:text-white">{quantity}</span>
+                <button
+                  onClick={() => setQuantity((q) => q + 1)}
                   className="px-4 py-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                 >
                   +
@@ -113,18 +113,28 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
               </div>
             </div>
 
-            <Button 
+            <Button
               onClick={handleAddToCart}
               className="w-full max-w-xs py-6 text-lg rounded-xl shadow-xl shadow-indigo-500/20"
               disabled={!product.isAvailable}
             >
               {product.isAvailable ? 'Add to bag' : 'Out of stock'}
             </Button>
-            
+
             <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800">
               <div className="flex items-center space-x-4 text-sm text-slate-500">
-                <svg className="h-5 w-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                <svg
+                  className="h-5 w-5 text-indigo-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
                 </svg>
                 <span>Free shipping on all continental US orders.</span>
               </div>

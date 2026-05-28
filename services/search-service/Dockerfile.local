@@ -15,7 +15,7 @@ COPY . .
 # Generate Prisma client (if this service uses Prisma)
 # RUN pnpm prisma generate
 
-EXPOSE 3001
+EXPOSE 3009
 
 # Hot-reload with ts-node-dev
 CMD ["pnpm", "run", "start:dev"]
