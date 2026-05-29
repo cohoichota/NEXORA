@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
 
+import { InventoryController } from './presentation/controllers/inventory.controller';
+
 @Module({
   imports: [],
-  controllers: [],
+  controllers: [InventoryController],
   providers: [],
 })
 export class AppModule {}

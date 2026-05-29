@@ -27,21 +27,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  if (process.env.NODE_ENV !== 'production') {
-    const config = new DocumentBuilder()
-      .setTitle('Nexora Order Service')
-      .setDescription('Order management API')
-      .setVersion('1.0')
-      .addBearerAuth()
-      .addTag('orders')
-      .addTag('health')
-      .build();
-    const doc = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('docs', app, doc);
-    logger.log(`Swagger UI: http://localhost:${port}/docs`);
-  }
-
-  // Connect Kafka Microservice
+  // Kafka microservice connection
   app.connectMicroservice({
     transport: Transport.KAFKA,
     options: {
@@ -53,6 +39,47 @@ async function bootstrap() {
       },
     },
   });
+
+  if (process.env.NODE_ENV !== 'production') {
+    const swaggerConfig = new DocumentBuilder()
+      .setTitle('Nexora — Order Service')
+      .setDescription(
+        '## Order Lifecycle + Saga Orchestration\n\n' +
+          'Manages the full order lifecycle from creation to delivery, ' +
+          'using the **Choreography Saga** pattern via Kafka to ensure distributed consistency.\n\n' +
+          '### Order State Machine\n' +
+          '```\n' +
+          'PENDING → CONFIRMED → PAYMENT_PROCESSING → PAID →\n' +
+          '  PROCESSING → SHIPPED → DELIVERED → (RETURN_REQUESTED → RETURNED)\n' +
+          '```\n\n' +
+          '### Saga Steps\n' +
+          '1. `PENDING` — order created, inventory reserved\n' +
+          '2. `CONFIRMED` — payment initiated\n' +
+          '3. `PAID` — payment confirmed, fulfillment begins\n' +
+          '4. `SHIPPED` — logistics update received\n' +
+          '5. `DELIVERED` — delivery confirmed\n\n' +
+          '> On any failure, compensating transactions are triggered automatically.',
+      )
+      .setVersion('1.0')
+      .setContact('Nexora Team', 'https://nexora.dev', 'team@nexora.dev')
+      .addServer(`http://localhost:${port}`, 'Local Development')
+      .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'JWT')
+      .addTag('orders', 'Order lifecycle management')
+      .addTag('health', 'Liveness and readiness checks')
+      .build();
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup('docs', app, document, {
+      swaggerOptions: {
+        persistAuthorization: true,
+        tagsSorter: 'alpha',
+        operationsSorter: 'alpha',
+        docExpansion: 'list',
+        filter: true,
+      },
+      customSiteTitle: 'Nexora Order API',
+    });
+    logger.log(`Swagger UI: http://localhost:${port}/docs`);
+  }
 
   await app.startAllMicroservices();
   await app.listen(port, '0.0.0.0');

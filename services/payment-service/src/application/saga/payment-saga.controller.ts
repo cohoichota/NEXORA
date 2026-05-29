@@ -27,7 +27,9 @@ export class PaymentSagaController {
 
     if (event.type === 'ORDER_CREATED') {
       this.logger.log(`Received ORDER_CREATED for order ${event.payload?.orderId}`);
-      await this.paymentService.processOrderPayment(event.payload);
+      if (event.payload) {
+        await this.paymentService.processOrderPayment(event.payload);
+      }
     }
   }
 }

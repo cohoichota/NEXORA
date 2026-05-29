@@ -267,7 +267,6 @@ export class ProductService implements OnModuleInit {
     }
 
     try {
-      // @ts-expect-error Dynamic import
       const { GoogleGenAI } = await import('@google/genai');
       const ai = new GoogleGenAI({});
       const response = await ai.models.generateContent({

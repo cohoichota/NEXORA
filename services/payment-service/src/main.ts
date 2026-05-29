@@ -11,6 +11,7 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule, {
     logger: ['error', 'warn', 'log', 'debug', 'verbose'],
+    rawBody: true, // Required for Stripe webhook signature verification
   });
 
   app.useGlobalPipes(
@@ -20,6 +21,45 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  app.enableCors({
+    origin: process.env.CORS_ORIGIN?.split(',') ?? ['http://localhost:3007'],
+    credentials: true,
+  });
+
+  if (process.env.NODE_ENV !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle('Nexora — Payment Service')
+      .setDescription(
+        '## Stripe / PayPal Payment Integration\n\n' +
+          'Handles payment initiation, refunds, and webhook processing.\n\n' +
+          '### Flow\n' +
+          '1. `order-service` publishes `ORDER_CREATED` Kafka event\n' +
+          '2. `payment-service` consumes it and initiates payment via provider\n' +
+          '3. Provider calls back via webhooks (`/payments/webhook/stripe` or `/payments/webhook/paypal`)\n' +
+          '4. `payment-service` publishes `PAYMENT_PROCESSED` or `PAYMENT_FAILED` event\n\n' +
+          '> **Note:** Webhook endpoints require raw body for signature verification.',
+      )
+      .setVersion('1.0')
+      .setContact('Nexora Team', 'https://nexora.dev', 'team@nexora.dev')
+      .addServer(`http://localhost:${port}`, 'Local Development')
+      .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'JWT')
+      .addTag('payments', 'Payment initiation, query, and refunds')
+      .addTag('health', 'Liveness and readiness checks')
+      .build();
+    const doc = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('docs', app, doc, {
+      swaggerOptions: {
+        persistAuthorization: true,
+        tagsSorter: 'alpha',
+        operationsSorter: 'alpha',
+        docExpansion: 'list',
+        filter: true,
+      },
+      customSiteTitle: 'Nexora Payment API',
+    });
+    logger.log(`Swagger UI: http://localhost:${port}/docs`);
+  }
 
   // Connect Kafka Microservice
   app.connectMicroservice({
@@ -35,19 +75,6 @@ async function bootstrap() {
   });
 
   await app.startAllMicroservices();
-
-  if (process.env.NODE_ENV !== 'production') {
-    const config = new DocumentBuilder()
-      .setTitle('Nexora Payment Service')
-      .setDescription('API Documentation for payment-service')
-      .setVersion('1.0')
-      .addBearerAuth()
-      .addTag('payment')
-      .build();
-    const doc = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('docs', app, doc);
-  }
-
   await app.listen(port, '0.0.0.0');
   logger.log(`Payment Service running on http://localhost:${port}`);
 }

@@ -28,16 +28,38 @@ async function bootstrap() {
 
   if (process.env.NODE_ENV !== 'production') {
     const swaggerConfig = new DocumentBuilder()
-      .setTitle('Nexora Product Service')
-      .setDescription('Product catalog, categories, and search API')
+      .setTitle('Nexora — Product Service')
+      .setDescription(
+        '## Product Catalog Management\n\n' +
+          'Manages the full product lifecycle: creation, categorization, variant management, ' +
+          'and AI-generated descriptions.\n\n' +
+          '### Features\n' +
+          '- CRUD for products and variants\n' +
+          '- Category hierarchy management\n' +
+          '- AI description generation via Gemini\n' +
+          '- Slug-based product lookup\n' +
+          '- Paginated + filterable product listing\n\n' +
+          '> Sellers can only manage their own products. Admins have full access.',
+      )
       .setVersion('1.0')
-      .addBearerAuth()
-      .addTag('products')
-      .addTag('categories')
-      .addTag('health')
+      .setContact('Nexora Team', 'https://nexora.dev', 'team@nexora.dev')
+      .addServer(`http://localhost:${port}`, 'Local Development')
+      .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'JWT')
+      .addTag('products', 'Product CRUD, search, and variant management')
+      .addTag('categories', 'Product category hierarchy')
+      .addTag('health', 'Liveness and readiness checks')
       .build();
     const document = SwaggerModule.createDocument(app, swaggerConfig);
-    SwaggerModule.setup('docs', app, document);
+    SwaggerModule.setup('docs', app, document, {
+      swaggerOptions: {
+        persistAuthorization: true,
+        tagsSorter: 'alpha',
+        operationsSorter: 'alpha',
+        docExpansion: 'list',
+        filter: true,
+      },
+      customSiteTitle: 'Nexora Product API',
+    });
     logger.log(`Swagger UI: http://localhost:${port}/docs`);
   }
 

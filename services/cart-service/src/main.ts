@@ -28,15 +28,36 @@ async function bootstrap() {
 
   if (process.env.NODE_ENV !== 'production') {
     const config = new DocumentBuilder()
-      .setTitle('Nexora Cart Service')
-      .setDescription('Redis-backed shopping cart API')
+      .setTitle('Nexora — Cart Service')
+      .setDescription(
+        '## Shopping Cart (Redis-backed)\n\n' +
+          'Manages authenticated user carts and anonymous guest carts, all stored in Redis for O(1) performance.\n\n' +
+          '### Cart Types\n' +
+          '- **User Cart** (`x-user-id` header) — persisted across sessions\n' +
+          '- **Guest Cart** (`guestId` path param) — temporary, merged on login\n\n' +
+          '### Post-Login Merge Flow\n' +
+          '1. Guest adds items → guest cart created with a `guestId`\n' +
+          '2. User logs in → call `POST /cart/merge` with the `guestId`\n' +
+          '3. Guest cart items are merged into the user cart',
+      )
       .setVersion('1.0')
-      .addBearerAuth()
-      .addTag('cart')
-      .addTag('health')
+      .setContact('Nexora Team', 'https://nexora.dev', 'team@nexora.dev')
+      .addServer(`http://localhost:${port}`, 'Local Development')
+      .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'JWT')
+      .addTag('cart', 'Add, update, remove items, and merge guest carts')
+      .addTag('health', 'Liveness and readiness checks')
       .build();
     const doc = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('docs', app, doc);
+    SwaggerModule.setup('docs', app, doc, {
+      swaggerOptions: {
+        persistAuthorization: true,
+        tagsSorter: 'alpha',
+        operationsSorter: 'alpha',
+        docExpansion: 'list',
+        filter: true,
+      },
+      customSiteTitle: 'Nexora Cart API',
+    });
     logger.log(`Swagger UI: http://localhost:${port}/docs`);
   }
 
