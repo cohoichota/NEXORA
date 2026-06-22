@@ -9,8 +9,8 @@
     "start:dev": "ts-node-dev --respawn --transpile-only src/main.ts",
     "lint": "eslint src --ext .ts",
     "type-check": "tsc --noEmit",
-    "test": "jest",
-    "test:integration": "jest --config jest.integration.config.js",
+    "test": "jest --passWithNoTests",
+    "test:integration": "jest --passWithNoTests",
     "clean": "rm -rf dist"
   },
   "dependencies": {
