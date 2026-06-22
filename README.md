@@ -91,18 +91,3 @@ feat(order-service): implement saga orchestration
 fix(auth-service): fix refresh token rotation race condition
 chore(docker): add prod docker-compose with nginx
 ```
-
-## Development Phases
-
-1. ✅ Foundation Setup (monorepo, Docker, shared packages)
-2. 🔄 Frontend Foundation (design system, storefront pages)
-3. ⬜ Backend Monolith (NestJS + Prisma + Auth)
-4. ⬜ Microservices Migration
-5. ⬜ Event-Driven Architecture (Saga, Outbox, CQRS)
-6. ⬜ Search & Recommendation
-7. ⬜ Realtime Features (WebSocket)
-8. ⬜ Observability
-9. ⬜ Kubernetes & Cloud
-10. ⬜ Security Hardening
-11. ⬜ AI Features
-12. ⬜ Production Engineering

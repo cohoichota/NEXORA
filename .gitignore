@@ -66,3 +66,8 @@ prisma/migrations/
 
 # TypeScript
 *.tsbuildinfo
+
+
+ecommerce_microservices_masterplan_v2.md
+.agent/
+**/generated/prisma/
