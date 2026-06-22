@@ -31,5 +31,13 @@ module.exports = {
     'no-console': ['warn', { allow: ['warn', 'error'] }],
     eqeqeq: ['error', 'always'],
   },
-  ignorePatterns: ['node_modules/', 'dist/', 'build/', '.next/', 'coverage/', '*.js'],
+  ignorePatterns: [
+    'node_modules/',
+    'dist/',
+    'build/',
+    '.next/',
+    'coverage/',
+    '*.js',
+    '**/generated/**',
+  ],
 };
