@@ -9,7 +9,7 @@ COPY packages ./packages
 COPY services/user-service ./services/user-service
 
 RUN pnpm install --frozen-lockfile
-RUN pnpm --filter=@nexora/user-service build
+RUN pnpm exec turbo run build --filter=@nexora/user-service
 
 # Stage 2: Production deps only
 FROM node:22-alpine AS deps

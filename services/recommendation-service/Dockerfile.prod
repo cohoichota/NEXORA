@@ -9,7 +9,7 @@ COPY packages ./packages
 COPY services/recommendation-service ./services/recommendation-service
 
 RUN pnpm install --frozen-lockfile
-RUN pnpm --filter=@nexora/recommendation-service build
+RUN pnpm exec turbo run build --filter=@nexora/recommendation-service
 
 # Stage 2: Production deps only
 FROM node:22-alpine AS deps

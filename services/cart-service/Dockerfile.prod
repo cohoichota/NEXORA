@@ -9,7 +9,7 @@ COPY packages ./packages
 COPY services/cart-service ./services/cart-service
 
 RUN pnpm install --frozen-lockfile
-RUN pnpm --filter=@nexora/cart-service build
+RUN pnpm exec turbo run build --filter=@nexora/cart-service
 
 # Stage 2: Production deps only
 FROM node:22-alpine AS deps

@@ -10,7 +10,7 @@ COPY services/auth-service ./services/auth-service
 
 RUN pnpm install --frozen-lockfile
 RUN pnpm --filter=@nexora/auth-service exec prisma generate
-RUN pnpm --filter=@nexora/auth-service build
+RUN pnpm exec turbo run build --filter=@nexora/auth-service
 
 # Stage 2: Production deps only
 FROM node:22-alpine AS deps
