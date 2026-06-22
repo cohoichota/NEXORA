@@ -5,3 +5,8 @@ build/
 coverage/
 .turbo/
 *.tsbuildinfo
+
+# Ignore Helm templates containing Go template syntax
+**/templates/**/*.yaml
+**/templates/**/*.yml
+

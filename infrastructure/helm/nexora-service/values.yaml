@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   repository: ghcr.io/nexora/service-name
   pullPolicy: IfNotPresent
-  tag: "latest"
+  tag: 'latest'
 
 service:
   type: ClusterIP
@@ -42,7 +42,7 @@ probes:
 
 ingress:
   enabled: false
-  className: "nginx"
+  className: 'nginx'
   annotations: {}
   hosts:
     - host: chart-example.local

@@ -26,19 +26,47 @@ export interface UserProps {
 export class User {
   constructor(private readonly props: UserProps) {}
 
-  get id() { return this.props.id; }
-  get email() { return this.props.email; }
-  get passwordHash() { return this.props.passwordHash; }
-  get role() { return this.props.role; }
-  get firstName() { return this.props.firstName; }
-  get lastName() { return this.props.lastName; }
-  get displayName() { return this.props.displayName ?? `${this.props.firstName ?? ''} ${this.props.lastName ?? ''}`.trim(); }
-  get avatar() { return this.props.avatar; }
-  get phone() { return this.props.phone; }
-  get emailVerified() { return this.props.emailVerified; }
-  get isActive() { return this.props.isActive; }
-  get createdAt() { return this.props.createdAt; }
-  get updatedAt() { return this.props.updatedAt; }
+  get id() {
+    return this.props.id;
+  }
+  get email() {
+    return this.props.email;
+  }
+  get passwordHash() {
+    return this.props.passwordHash;
+  }
+  get role() {
+    return this.props.role;
+  }
+  get firstName() {
+    return this.props.firstName;
+  }
+  get lastName() {
+    return this.props.lastName;
+  }
+  get displayName() {
+    return (
+      this.props.displayName ?? `${this.props.firstName ?? ''} ${this.props.lastName ?? ''}`.trim()
+    );
+  }
+  get avatar() {
+    return this.props.avatar;
+  }
+  get phone() {
+    return this.props.phone;
+  }
+  get emailVerified() {
+    return this.props.emailVerified;
+  }
+  get isActive() {
+    return this.props.isActive;
+  }
+  get createdAt() {
+    return this.props.createdAt;
+  }
+  get updatedAt() {
+    return this.props.updatedAt;
+  }
 
   // ── Business rules ──────────────────────────────────────────
 

@@ -2,7 +2,7 @@ name: Deploy (ArgoCD)
 
 on:
   workflow_run:
-    workflows: ["Build & Push Docker Images"]
+    workflows: ['Build & Push Docker Images']
     types: [completed]
     branches: [main]
 

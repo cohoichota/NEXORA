@@ -15,10 +15,7 @@ class ApiClientError extends Error {
   }
 }
 
-async function request<T>(
-  path: string,
-  options: RequestInit = {},
-): Promise<T> {
+async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const url = path.startsWith('http') ? path : `${API_URL}${path}`;
 
   const response = await fetch(url, {
@@ -33,7 +30,7 @@ async function request<T>(
   if (!response.ok) {
     let errorData: ApiError | undefined;
     try {
-      errorData = await response.json() as ApiError;
+      errorData = (await response.json()) as ApiError;
     } catch {
       // ignore parse error
     }

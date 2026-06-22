@@ -16,7 +16,10 @@ export interface IUserRepository {
   findById(id: string): Promise<User | null>;
   findByEmail(email: string): Promise<User | null>;
   create(input: CreateUserInput): Promise<User>;
-  update(id: string, data: Partial<CreateUserInput & { emailVerified: boolean; isActive: boolean }>): Promise<User>;
+  update(
+    id: string,
+    data: Partial<CreateUserInput & { emailVerified: boolean; isActive: boolean }>,
+  ): Promise<User>;
   delete(id: string): Promise<void>;
   existsByEmail(email: string): Promise<boolean>;
 }

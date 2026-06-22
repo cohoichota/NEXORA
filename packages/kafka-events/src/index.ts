@@ -87,9 +87,9 @@ export interface ProductDeletedEvent {
 }
 
 // A generic event payload type
-export type NexoraEvent = 
-  | OrderCreatedEvent 
-  | PaymentProcessedEvent 
+export type NexoraEvent =
+  | OrderCreatedEvent
+  | PaymentProcessedEvent
   | PaymentFailedEvent
   | ProductCreatedEvent
   | ProductUpdatedEvent
