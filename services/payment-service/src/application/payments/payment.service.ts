@@ -62,7 +62,7 @@ export class PaymentService {
               topic: 'nexora.payments',
               type: successEvent.type,
               payload:
-                successEvent.payload as unknown as import('@prisma/client').Prisma.InputJsonValue,
+                successEvent.payload as unknown as import('../../generated/prisma').Prisma.InputJsonValue,
             },
           });
         });
@@ -106,7 +106,7 @@ export class PaymentService {
             topic: 'nexora.payments',
             type: failureEvent.type,
             payload:
-              failureEvent.payload as unknown as import('@prisma/client').Prisma.InputJsonValue,
+              failureEvent.payload as unknown as import('../../generated/prisma').Prisma.InputJsonValue,
           },
         });
       });

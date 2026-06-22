@@ -1,8 +1,8 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { OutboxStatus } from '@prisma/client';
 
+import { OutboxStatus } from '../../generated/prisma';
 import { PrismaService } from '../../infrastructure/database/prisma/prisma.service';
 import { KAFKA_CLIENT } from '../../infrastructure/kafka/kafka.module';
 
