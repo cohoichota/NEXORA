@@ -32,6 +32,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Generate Prisma Clients
+        run: |
+          pnpm --filter=@nexora/auth-service exec prisma generate
+          pnpm --filter=@nexora/order-service exec prisma generate
+          pnpm --filter=@nexora/payment-service exec prisma generate
+          pnpm --filter=@nexora/product-service exec prisma generate
+
       - name: Build shared packages
         run: pnpm turbo run build --filter="./packages/*"
 
@@ -66,6 +73,13 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Clients
+        run: |
+          pnpm --filter=@nexora/auth-service exec prisma generate
+          pnpm --filter=@nexora/order-service exec prisma generate
+          pnpm --filter=@nexora/payment-service exec prisma generate
+          pnpm --filter=@nexora/product-service exec prisma generate
 
       - name: Build shared packages
         run: pnpm turbo run build --filter="./packages/*"
@@ -125,6 +139,13 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Clients
+        run: |
+          pnpm --filter=@nexora/auth-service exec prisma generate
+          pnpm --filter=@nexora/order-service exec prisma generate
+          pnpm --filter=@nexora/payment-service exec prisma generate
+          pnpm --filter=@nexora/product-service exec prisma generate
 
       - name: Run integration tests
         env:
